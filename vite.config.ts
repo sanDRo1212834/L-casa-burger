@@ -2,10 +2,37 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig} from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(), 
+      tailwindcss(),
+      VitePWA({
+        registerType: 'prompt',
+        includeAssets: ['favicon.png', 'capa.png'],
+        manifest: {
+          name: 'La Casa Burger',
+          short_name: 'La Casa Burger',
+          description: 'Sistema de Gestão La Casa Burger',
+          theme_color: '#000000',
+          background_color: '#000000',
+          icons: [
+            {
+              src: 'favicon.png',
+              sizes: '192x192',
+              type: 'image/png'
+            },
+            {
+              src: 'favicon.png',
+              sizes: '512x512',
+              type: 'image/png'
+            }
+          ]
+        }
+      })
+    ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

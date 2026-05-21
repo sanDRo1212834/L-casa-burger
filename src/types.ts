@@ -37,6 +37,7 @@ export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'delivered' | 'can
 
 export type Order = {
   id: string;
+  orderNumber?: number;
   createdAt: string;
   customerName: string;
   phone: string;

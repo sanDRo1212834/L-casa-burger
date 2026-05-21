@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { ShoppingBag, ChevronRight, X, Loader2, MapPin, Map, CreditCard, Banknote, Smartphone, Store, Home, Receipt, TicketPercent, ShoppingCart, Search, CheckCircle2, Contact2, Package, Settings, Minus, Plus, Heart } from 'lucide-react';
-import { fetchAddressByCep } from '../utils/cep';
+import { fetchAddressByCep } from '../context/utils/cep';
 import { Product, Address, DeliveryType, PaymentMethod } from '../types';
 import { ProductModal } from '../components/ProductModal';
 
@@ -310,8 +310,10 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
     }
   };
 
-  const handleFinishOrder = () => {
-    submitOrder({
+  const [submittedOrder, setSubmittedOrder] = useState<any>(null);
+
+  const handleFinishOrder = async () => {
+    const newOrder = await submitOrder({
       customerName,
       phone,
       items: cart,
@@ -322,6 +324,7 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
       paymentMethod,
       changeFor: paymentMethod === 'money' && changeFor ? parseFloat(changeFor) : undefined
     });
+    setSubmittedOrder(newOrder);
     setStep('success');
   };
 
@@ -582,6 +585,13 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
                 <CheckCircle2 className="w-12 h-12 text-green-600" />
               </motion.div>
               <h2 className="text-2xl font-black text-neutral-900 mb-2">Pedido Enviado!</h2>
+              {submittedOrder && (
+                <div className="bg-neutral-100 p-4 rounded-xl mb-4 w-full">
+                  <p className="text-sm text-neutral-500 font-medium mb-1">Seu número de pedido</p>
+                  <p className="text-3xl font-black text-yellow-500">#{submittedOrder.orderNumber || submittedOrder.id.slice(0, 4).toUpperCase()}</p>
+                  <p className="text-neutral-900 font-bold mt-2">{submittedOrder.customerName}</p>
+                </div>
+              )}
               <p className="text-neutral-500 mb-8">
                 O restaurante já recebeu seu pedido. 
                 {deliveryType === 'delivery' ? ' O entregador levará até você em breve.' : ' Venha retirar no balcão em 30 min.'}

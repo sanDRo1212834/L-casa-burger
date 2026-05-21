@@ -18,7 +18,7 @@ export function Header() {
           >
             {/* Logo Image */}
             <div className="relative w-12 h-12 rounded-full overflow-hidden transform group-hover:scale-105 transition-transform shadow-md border-2 border-yellow-400">
-              <img src="/capa.png" alt="La Casa Burguer Logo" className="w-full h-full object-cover" />
+              <img src="/favicon.png" alt="La Casa Burguer Logo" className="w-full h-full object-fill bg-black" />
             </div>
             <div className="flex flex-col">
               <span className="font-black text-xl italic tracking-wide text-yellow-400 uppercase leading-none">La Casa</span>

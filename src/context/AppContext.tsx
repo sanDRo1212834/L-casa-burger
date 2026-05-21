@@ -51,7 +51,7 @@ type AppState = {
   setSearchQuery: (query: string) => void;
 
   // Order Submission
-  submitOrder: (order: Omit<Order, 'id' | 'createdAt'>) => void;
+  submitOrder: (order: Omit<Order, 'id' | 'createdAt'>) => Promise<Order>;
 
   toggleLikeProduct: (productId: string) => void;
   likedProducts: string[];
@@ -100,8 +100,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (cats && cats.length > 0) setCategories(cats);
       if (prods && prods.length > 0) setProducts(prods);
       if (ords && ords.length > 0) {
-        setOrders(ords.map((o: any) => ({
+        setOrders(ords.map((o: any, idx: number) => ({
           ...o,
+          orderNumber: ords.length - idx,
           createdAt: o.created_at,
           customerName: o.customer_name,
           paymentMethod: o.payment_method
@@ -199,6 +200,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const submitOrder = async (orderData: Omit<Order, 'id' | 'createdAt'>) => {
     const isSupabaseConfiguredFlag = isSupabaseConfigured();
+    const currentOrderNumber = orders.length + 1;
     let newOrder: Order;
     
     if (isSupabaseConfiguredFlag) {
@@ -216,6 +218,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       
       newOrder = {
         ...orderData,
+        orderNumber: currentOrderNumber,
         id: data?.id || Math.random().toString(36).substr(2, 9),
         createdAt: data?.created_at || new Date().toISOString()
       };
@@ -235,6 +238,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } else {
       newOrder = {
         ...orderData,
+        orderNumber: currentOrderNumber,
         id: Math.random().toString(36).substr(2, 9),
         createdAt: new Date().toISOString()
       };
@@ -264,6 +268,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
 
     clearCart();
+    return newOrder;
   };
 
   return (
