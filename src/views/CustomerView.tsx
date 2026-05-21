@@ -7,10 +7,21 @@ import { Product, Address, DeliveryType, PaymentMethod } from '../types';
 import { ProductModal } from '../components/ProductModal';
 
 export function CustomerView() {
-  const { categories, products, addToCart, isCartOpen, setIsCartOpen, searchQuery, toggleLikeProduct, likedProducts } = useAppContext();
+  const { categories, products, addToCart, isCartOpen, setIsCartOpen, searchQuery, toggleLikeProduct, likedProducts, setView, myOrders } = useAppContext();
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<'home' | 'orders' | 'promos'>('home');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'pending': return { label: 'Pendente', bg: 'bg-yellow-100', text: 'text-yellow-800' };
+      case 'preparing': return { label: 'Preparando', bg: 'bg-blue-100', text: 'text-blue-800' };
+      case 'ready': return { label: 'Pronto para Retirada', bg: 'bg-orange-100', text: 'text-orange-800' };
+      case 'delivered': return { label: 'Entregue', bg: 'bg-green-100', text: 'text-green-800' };
+      case 'cancelled': return { label: 'Cancelado', bg: 'bg-red-100', text: 'text-red-800' };
+      default: return { label: status, bg: 'bg-neutral-100', text: 'text-neutral-800' };
+    }
+  };
 
   // Sorting products by sales and likes for "Mais Saídos" carousel
   const bestSellers = [...products].sort((a, b) => ((b.likes || 0) + b.sales) - ((a.likes || 0) + a.sales)).slice(0, 5);
@@ -143,16 +154,61 @@ export function CustomerView() {
       )}
 
       {activeTab === 'orders' && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-24">
           <h2 className="text-2xl font-black text-neutral-900 mb-6">Meus Pedidos</h2>
-          <div className="bg-white p-12 rounded-3xl border border-neutral-100 flex flex-col items-center justify-center text-center shadow-sm">
-            <Receipt className="w-16 h-16 text-neutral-300 mb-4" />
-            <h3 className="font-bold text-lg text-neutral-900 mb-2">Nenhum pedido ainda</h3>
-            <p className="text-neutral-500 mb-6 max-w-sm">Você ainda não realizou nenhum pedido. Faça o seu primeiro pedido com a gente e acompanhe por aqui.</p>
-            <button onClick={() => setActiveTab('home')} className="bg-red-600 text-white px-6 py-3 rounded-full font-bold hover:bg-red-700 transition-colors">
-              Explorar Cardápio
-            </button>
-          </div>
+          
+          {myOrders.length === 0 ? (
+            <div className="bg-white p-12 rounded-3xl border border-neutral-100 flex flex-col items-center justify-center text-center shadow-sm">
+              <Receipt className="w-16 h-16 text-neutral-300 mb-4" />
+              <h3 className="font-bold text-lg text-neutral-900 mb-2">Nenhum pedido ainda</h3>
+              <p className="text-neutral-500 mb-6 max-w-sm">Você ainda não realizou nenhum pedido. Faça o seu primeiro pedido com a gente e acompanhe por aqui.</p>
+              <button onClick={() => setActiveTab('home')} className="bg-red-600 text-white px-6 py-3 rounded-full font-bold hover:bg-red-700 transition-colors">
+                Explorar Cardápio
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {myOrders.map(order => {
+                const status = getStatusLabel(order.status);
+                return (
+                  <div key={order.id} className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100 transition-all hover:border-red-200">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                      <div>
+                        <div className="flex items-center gap-3 mb-1">
+                          <span className="font-bold text-lg text-neutral-900">Pedido #{order.orderNumber || order.id.slice(0, 4)}</span>
+                          <span className={`px-2 py-1 rounded-full text-xs font-bold ${status.bg} ${status.text}`}>
+                            {status.label}
+                          </span>
+                        </div>
+                        <p className="text-sm text-neutral-500">
+                          {new Date(order.createdAt).toLocaleString('pt-BR')}
+                        </p>
+                      </div>
+                      <div className="text-right flex flex-col sm:items-end">
+                        <span className="text-sm font-medium text-neutral-500 mb-1">Total do Pedido</span>
+                        <span className="font-black text-xl text-neutral-900">{formatPrice(order.total)}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="border-t border-neutral-100 pt-4 mt-4">
+                      <h4 className="text-sm font-bold text-neutral-700 mb-2 border-b border-neutral-50 pb-2">Itens do Pedido:</h4>
+                      <ul className="space-y-2">
+                        {order.items.map((item, idx) => (
+                          <li key={idx} className="flex justify-between items-center text-sm">
+                            <div className="flex items-center gap-2">
+                              <span className="bg-neutral-100 text-neutral-600 font-bold px-2 py-0.5 rounded text-xs">{item.quantity}x</span>
+                              <span className="text-neutral-700">{item.product.name}</span>
+                            </div>
+                            <span className="text-neutral-500 font-medium">{formatPrice(item.product.price * item.quantity)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </section>
       )}
 
@@ -187,6 +243,9 @@ export function CustomerView() {
 
         </section>
       )}
+
+      {/* Spacer */}
+      <div className="h-16"></div>
 
       {/* Customer Bottom Navigation (Mobile) */}
       <CustomerBottomNav activeTab={activeTab} setActiveTab={setActiveTab} />

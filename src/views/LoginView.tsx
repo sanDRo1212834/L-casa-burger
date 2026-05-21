@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Mail, Key } from 'lucide-react';
 
 export function LoginView() {
-  const { setView } = useAppContext();
+  const { setView, setUser, isAdmin } = useAppContext();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -23,7 +23,13 @@ export function LoginView() {
     if (isSupabaseConfigured()) {
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session) {
-          setView('admin');
+          setUser(session.user);
+          const adminEmails = ['sousasandro419@gmail.com', 'admin@email.com'];
+          if (adminEmails.includes(session.user.email)) {
+            setView('admin');
+          } else {
+            setView('customer');
+          }
         }
       });
 
@@ -31,13 +37,21 @@ export function LoginView() {
         data: { subscription },
       } = supabase.auth.onAuthStateChange((_event, session) => {
         if (session) {
-          setView('admin');
+          setUser(session.user);
+          const adminEmails = ['sousasandro419@gmail.com', 'admin@email.com'];
+          if (adminEmails.includes(session.user.email)) {
+            setView('admin');
+          } else {
+            setView('customer');
+          }
+        } else {
+          setUser(null);
         }
       });
 
       return () => subscription.unsubscribe();
     }
-  }, [setView]);
+  }, [setView, setUser]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,13 +67,17 @@ export function LoginView() {
 
       if (error) {
         setErrorMsg(error.message);
-      } else if (data.session) {
-        setView('admin');
       }
     } else {
       // Fallback local logic se não houver supabase
+      const adminEmails = ['sousasandro419@gmail.com', 'admin@email.com'];
       if (password.length >= 3) {
-        setView('admin');
+        setUser({ email });
+        if (adminEmails.includes(email)) {
+          setView('admin');
+        } else {
+          setView('customer');
+        }
       } else {
         setErrorMsg('Senha inválida. (Mínimo 3 caracteres)');
       }

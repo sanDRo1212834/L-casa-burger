@@ -3,7 +3,7 @@ import { ShoppingCart, LogOut, Search, MapPin, Receipt, Utensils, LayoutDashboar
 import { useAppContext } from '../context/AppContext';
 
 export function Header() {
-  const { view, setView, searchQuery, setSearchQuery, cart, setIsCartOpen } = useAppContext();
+  const { view, setView, searchQuery, setSearchQuery, cart, setIsCartOpen, user, setUser, isAdmin } = useAppContext();
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
 
   return (
@@ -47,12 +47,38 @@ export function Header() {
                   </div>
                 ) : (
                   <>
-                    <button 
-                      onClick={() => setView('login')}
-                      className="text-sm font-medium text-neutral-400 hover:text-white transition-colors hidden sm:block"
-                    >
-                      Área do Admin
-                    </button>
+                    <div className="flex items-center gap-4 hidden sm:flex">
+                      {user && isAdmin && (
+                        <button 
+                          onClick={() => setView('admin')}
+                          className="text-sm font-bold text-yellow-400 hover:text-yellow-300 transition-colors"
+                        >
+                          Área do Admin
+                        </button>
+                      )}
+                      {user && (
+                        <button 
+                          onClick={async () => {
+                            let url = import.meta.env.VITE_SUPABASE_URL || '';
+                            if (typeof url === 'string') {
+                              if (url.startsWith('"') && url.endsWith('"')) url = url.replace(/^"|"$/g, '');
+                              url = url.trim();
+                            }
+                            // we must check if supabase is configured
+                            if (url && url !== "" && url !== "https://placeholder.supabase.co") {
+                               const { supabase } = await import('../lib/supabase');
+                               await supabase.auth.signOut();
+                            } else {
+                               setUser(null);
+                            }
+                            setView('customer');
+                          }}
+                          className="text-sm font-medium text-neutral-400 hover:text-white transition-colors"
+                        >
+                          Sair
+                        </button>
+                      )}
+                    </div>
                     <div className="flex items-center gap-2">
                       <button 
                         onClick={() => setIsSearchExpanded(true)}

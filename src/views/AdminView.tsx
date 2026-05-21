@@ -31,7 +31,7 @@ export function AdminView() {
         <div className="absolute top-4 right-4 z-50 bg-neutral-900 border border-neutral-700 shadow-2xl rounded-2xl p-4 flex items-center gap-4 animate-in slide-in-from-top-2 fade-in duration-300">
           <div className="relative">
             <ShoppingCart className="w-6 h-6 text-white" />
-            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">
+            <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold animate-bounce">
               {pendingOrders}
             </span>
           </div>
@@ -52,8 +52,8 @@ export function AdminView() {
           <SidebarItem 
             icon={
               <div className="relative">
-                <ShoppingCart />
-                {pendingOrders > 0 && <span className="absolute -top-1 -right-2 bg-red-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{pendingOrders}</span>}
+                <ShoppingCart className={pendingOrders > 0 ? "text-red-500" : ""} />
+                {pendingOrders > 0 && <span className="absolute -top-1 -right-2 bg-red-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold animate-bounce">{pendingOrders}</span>}
               </div>
             }
             label="Pedidos (PDV)" 
@@ -93,8 +93,8 @@ export function AdminView() {
           <MobileNavItem 
             icon={
               <div className="relative">
-                <ShoppingCart />
-                {pendingOrders > 0 && <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{pendingOrders}</span>}
+                <ShoppingCart className={pendingOrders > 0 ? "text-red-500" : ""} />
+                {pendingOrders > 0 && <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold animate-bounce">{pendingOrders}</span>}
               </div>
             }
             label="Pedidos" 
@@ -153,21 +153,54 @@ function DashboardTab() {
         <StatCard title="Alerta de Estoque" value={`${lowStockCount} Itens`} color="bg-red-50 text-red-600" />
       </div>
       
-      {/* Mock Chart Area */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100">
-        <h3 className="font-bold text-neutral-900 mb-4">Vendas na Semana (Simulado)</h3>
-        <div className="h-64 flex items-end gap-2 justify-between mt-8">
-          {[40, 70, 45, 90, 110, 140, 180].map((h, i) => (
-            <div key={i} className="w-full max-w-[40px] bg-red-100 rounded-t-md relative group">
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-2 bg-neutral-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                {h} Vendas
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Mock Chart Area */}
+        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-neutral-100">
+          <h3 className="font-bold text-neutral-900 mb-4">Vendas na Semana (Simulado)</h3>
+          <div className="h-64 flex items-end gap-2 justify-between mt-8">
+            {[40, 70, 45, 90, 110, 140, 180].map((h, i) => (
+              <div key={i} className="w-full max-w-[40px] bg-red-100 rounded-t-md relative group">
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-2 bg-neutral-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  {h} Vendas
+                </div>
+                <div className="bg-red-600 rounded-t-md transition-all duration-1000 w-full" style={{ height: `${(h/180)*100}%` }}></div>
               </div>
-              <div className="bg-red-600 rounded-t-md transition-all duration-1000 w-full" style={{ height: `${(h/180)*100}%` }}></div>
-            </div>
-          ))}
+            ))}
+          </div>
+          <div className="flex justify-between mt-4 text-sm text-neutral-400 font-medium">
+            <span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span>
+          </div>
         </div>
-        <div className="flex justify-between mt-4 text-sm text-neutral-400 font-medium">
-          <span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span>
+
+        {/* Best Sellers Ranking */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100 flex flex-col">
+          <h3 className="font-bold text-neutral-900 mb-4">Ranking Mais Vendidos</h3>
+          <div className="flex-1 overflow-y-auto pr-2 space-y-4">
+            {products.length > 0 ? (
+              [...products]
+                .sort((a, b) => b.sales - a.sales)
+                .slice(0, 5) // Show top 5
+                .map((product, index) => (
+                  <div key={product.id} className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center font-bold text-neutral-500 shrink-0">
+                      {index + 1}
+                    </div>
+                    <div className="w-12 h-12 rounded-xl bg-neutral-100 overflow-hidden shrink-0">
+                      <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm text-neutral-900 truncate">{product.name}</p>
+                      <p className="text-xs text-neutral-500 font-medium">{product.sales} vendas</p>
+                    </div>
+                  </div>
+                ))
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-neutral-400">
+                <p className="text-sm font-medium">Nenhum produto</p>
+                <p className="text-xs">Cadastre produtos para ver o ranking</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

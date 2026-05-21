@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Category, Product, Order, Customer, Employee, TableReport, CartItem } from '../types';
-import { mockCategories, mockProducts, mockEmployees, mockTables } from '../data/mockData';
 import { supabase } from '../lib/supabase';
 
 const getSupabaseUrl = () => {
@@ -53,14 +52,25 @@ type AppState = {
   // Order Submission
   submitOrder: (order: Omit<Order, 'id' | 'createdAt'>) => Promise<Order>;
 
+  myOrders: Order[];
+
   toggleLikeProduct: (productId: string) => void;
   likedProducts: string[];
+
+  // Auth User
+  user: any;
+  setUser: (user: any) => void;
+  isAdmin: boolean;
 };
 
 const AppContext = createContext<AppState | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [view, setView] = useState<'customer' | 'admin' | 'login'>('customer');
+  const [view, setView] = useState<'customer' | 'admin' | 'login'>('admin');
+  const [user, setUser] = useState<any>({ email: 'sousasandro419@gmail.com' });
+  
+  const adminEmails = ['sousasandro419@gmail.com', 'admin@email.com'];
+  const isAdmin = user ? adminEmails.includes(user.email) : false;
   
   const [likedProducts, setLikedProducts] = useState<string[]>(() => {
     try {
@@ -75,12 +85,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('likedProducts', JSON.stringify(likedProducts));
   }, [likedProducts]);
 
-  const [categories, setCategories] = useState<Category[]>(mockCategories);
-  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const [myOrderIds, setMyOrderIds] = useState<string[]>(() => {
+    try {
+      const item = localStorage.getItem('myOrderIds');
+      return item ? JSON.parse(item) : [];
+    } catch (error) {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('myOrderIds', JSON.stringify(myOrderIds));
+  }, [myOrderIds]);
+
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  
+  const myOrders = orders.filter(o => myOrderIds.includes(o.id));
+
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [employees, setEmployees] = useState<Employee[]>(mockEmployees);
-  const [tables, setTables] = useState<TableReport[]>(mockTables);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [tables, setTables] = useState<TableReport[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -245,6 +271,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
     
     setOrders(prev => [newOrder, ...prev]);
+    setMyOrderIds(prev => [newOrder.id, ...prev]);
     
     // Auto add customer
     setCustomers(prev => {
@@ -279,7 +306,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       addProduct, updateProduct, removeProduct, addCategory, updateOrderStatus,
       toggleLikeProduct, likedProducts,
       isCartOpen, setIsCartOpen, cart, addToCart, removeFromCart, updateCartQuantity, clearCart, cartTotal,
-      submitOrder
+      submitOrder, myOrders,
+      user, setUser, isAdmin
     }}>
       {children}
     </AppContext.Provider>
