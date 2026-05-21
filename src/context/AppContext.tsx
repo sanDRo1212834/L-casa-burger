@@ -125,7 +125,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         ]);
 
         if (cats && cats.length > 0) setCategories(cats);
-        if (prods && prods.length > 0) setProducts(prods);
+        if (prods && prods.length > 0) {
+          setProducts(prods.map((p: any) => ({
+            ...p,
+            categoryId: p.category_id || p.categoryId
+          })));
+        }
         if (ords && ords.length > 0) {
           setOrders(ords.map((o: any, idx: number) => ({
             ...o,
@@ -176,7 +181,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setProducts(prev => [...prev, product]);
     if (isSupabaseConfigured()) {
       try {
-        await supabase.from('products').insert([{ ...product, category_id: product.categoryId }]);
+        const { categoryId, ...rest } = product;
+        await supabase.from('products').insert([{ ...rest, category_id: categoryId }]);
       } catch (err) {
         console.warn("addProduct sync failed:", err);
       }
