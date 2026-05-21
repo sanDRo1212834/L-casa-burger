@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { LayoutDashboard, ShoppingCart, PackageSearch, Users, Contact2, LayoutGrid, Coffee, Plus, Trash2, Edit, X, Search, Camera, ImagePlus, Heart, LogOut } from 'lucide-react';
-import { Product, Category, Order } from '../types';
+import { Product, Category, Order, Extra } from '../types';
 import { supabase } from '../lib/supabase';
 
 export function AdminView() {
@@ -237,7 +237,13 @@ function OrdersTab() {
       paymentText = `💳 *Máquina de Cartão*`;
     }
 
-    let itemsText = order.items.map(item => `➡ \`\`\`${item.quantity}x ${item.product.name}\`\`\``).join('\n');
+    let itemsText = order.items.map(item => {
+      let extText = '';
+      if (item.selectedExtras && item.selectedExtras.length > 0) {
+        extText = item.selectedExtras.map(ex => `\n     + ${ex.quantity}x ${ex.extra.name}`).join('');
+      }
+      return `➡ \`\`\`${item.quantity}x ${item.product.name}\`\`\`${item.observation ? `\n   Obs: ${item.observation}` : ''}${extText}`;
+    }).join('\n');
 
     let deliveryText = '';
     if (isDelivery && order.address) {
@@ -297,7 +303,13 @@ function OrdersTab() {
                  Pedido #{order.orderNumber || '?'} - {order.customerName} <span className="text-neutral-400 font-normal">({order.phone || 'Sem telefone'})</span>
                </p>
                <p className="text-sm text-neutral-500 mt-1">
-                 {order.items.map(i => `${i.quantity}x ${i.product.name}`).join(', ')}
+                 {order.items.map(i => {
+                   let extDesc = '';
+                   if (i.selectedExtras && i.selectedExtras.length > 0) {
+                     extDesc = ` (+ ${i.selectedExtras.map(e => `${e.quantity}x ${e.extra.name}`).join(', ')})`;
+                   }
+                   return `${i.quantity}x ${i.product.name}${extDesc}`;
+                 }).join(' | ')}
                </p>
              </div>
              
@@ -355,6 +367,25 @@ function ProductsTab() {
 
   // Formulário Categoria
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryExtras, setNewCategoryExtras] = useState<Extra[]>([]);
+  const [newExtraName, setNewExtraName] = useState('');
+  const [newExtraPrice, setNewExtraPrice] = useState('');
+
+  const handleAddExtraToCategory = () => {
+    if (!newExtraName || !newExtraPrice) return;
+    const extra: Extra = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: newExtraName,
+      price: parseFloat(newExtraPrice)
+    };
+    setNewCategoryExtras(prev => [...prev, extra]);
+    setNewExtraName('');
+    setNewExtraPrice('');
+  };
+
+  const handleRemoveExtra = (id: string) => {
+    setNewCategoryExtras(prev => prev.filter(e => e.id !== id));
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -436,12 +467,14 @@ function ProductsTab() {
     
     const category: Category = {
       id: Math.random().toString(36).substr(2, 9),
-      name: newCategoryName
+      name: newCategoryName,
+      extras: newCategoryExtras
     };
     
     addCategory(category);
     setShowCategoryModal(false);
     setNewCategoryName('');
+    setNewCategoryExtras([]);
   }
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -544,6 +577,33 @@ function ProductsTab() {
                   <label className="block text-sm font-bold text-neutral-600 mb-2">Nome da Categoria</label>
                   <input type="text" required value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder="Ex: Bebidas" className="w-full p-3 rounded-xl border border-neutral-200 focus:border-red-600 outline-none" />
                 </div>
+                
+                <div className="pt-4 border-t border-neutral-100">
+                  <label className="block text-sm font-bold text-neutral-600 mb-2">Adicionais / Extras (Opcional)</label>
+                  <div className="flex gap-2 mb-4">
+                    <input type="text" value={newExtraName} onChange={e => setNewExtraName(e.target.value)} placeholder="Ex: Bacon" className="flex-1 p-3 rounded-xl border border-neutral-200 focus:border-red-600 outline-none" />
+                    <input type="number" step="0.01" value={newExtraPrice} onChange={e => setNewExtraPrice(e.target.value)} placeholder="Preço" className="w-24 p-3 rounded-xl border border-neutral-200 focus:border-red-600 outline-none" />
+                    <button type="button" onClick={handleAddExtraToCategory} className="bg-neutral-900 text-white p-3 rounded-xl hover:bg-neutral-800 transition-colors">
+                      <Plus className="w-5 h-5"/>
+                    </button>
+                  </div>
+                  {newCategoryExtras.length > 0 && (
+                    <ul className="space-y-2 mb-4">
+                      {newCategoryExtras.map(extra => (
+                        <li key={extra.id} className="flex justify-between items-center bg-neutral-50 p-3 rounded-xl">
+                          <div>
+                            <p className="font-bold text-sm text-neutral-800">{extra.name}</p>
+                            <p className="text-xs text-neutral-500 text-green-600 font-bold">R$ {extra.price.toFixed(2).replace('.', ',')}</p>
+                          </div>
+                          <button type="button" onClick={() => handleRemoveExtra(extra.id)} className="text-red-500 hover:text-red-700">
+                            <X className="w-4 h-4"/>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
                 <button type="submit" className="w-full py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors">
                   Salvar Categoria
                 </button>

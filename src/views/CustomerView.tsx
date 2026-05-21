@@ -197,15 +197,27 @@ export function CustomerView() {
                     <div className="border-t border-neutral-100 pt-4 mt-4">
                       <h4 className="text-sm font-bold text-neutral-700 mb-2 border-b border-neutral-50 pb-2">Itens do Pedido:</h4>
                       <ul className="space-y-2">
-                        {order.items.map((item, idx) => (
-                          <li key={idx} className="flex justify-between items-center text-sm">
-                            <div className="flex items-center gap-2">
-                              <span className="bg-neutral-100 text-neutral-600 font-bold px-2 py-0.5 rounded text-xs">{item.quantity}x</span>
-                              <span className="text-neutral-700">{item.product.name}</span>
-                            </div>
-                            <span className="text-neutral-500 font-medium">{formatPrice(item.product.price * item.quantity)}</span>
-                          </li>
-                        ))}
+                        {order.items.map((item, idx) => {
+                          const extrasTotal = item.selectedExtras?.reduce((sum, ext) => sum + ext.extra.price * ext.quantity, 0) || 0;
+                          return (
+                            <li key={idx} className="flex justify-between items-start text-sm">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <span className="bg-neutral-100 text-neutral-600 font-bold px-2 py-0.5 rounded text-xs">{item.quantity}x</span>
+                                  <span className="text-neutral-700">{item.product.name}</span>
+                                </div>
+                                {item.selectedExtras && item.selectedExtras.length > 0 && (
+                                  <div className="ml-9 mt-1 text-xs text-neutral-500">
+                                    {item.selectedExtras.map(ex => (
+                                      <p key={ex.extra.id}>+ {ex.quantity}x {ex.extra.name}</p>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                              <span className="text-neutral-500 font-medium whitespace-nowrap">{formatPrice((item.product.price + extrasTotal) * item.quantity)}</span>
+                            </li>
+                          );
+                        })}
                       </ul>
                     </div>
                   </div>
@@ -449,24 +461,33 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
                         {item.observation && (
                           <p className="text-xs text-neutral-500 mt-0.5 line-clamp-1 italic">Obs: {item.observation}</p>
                         )}
-                        <p className="text-red-600 font-bold text-sm">
-                          R$ {(item.product.price * item.quantity).toFixed(2).replace('.', ',')}
+                        {item.selectedExtras && item.selectedExtras.length > 0 && (
+                          <div className="mt-1">
+                            {item.selectedExtras.map(ext => (
+                              <p key={ext.extra.id} className="text-xs text-neutral-600">
+                                + {ext.quantity}x {ext.extra.name}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                        <p className="text-red-600 font-bold text-sm mt-1">
+                          R$ {((item.product.price + (item.selectedExtras?.reduce((sum, ext) => sum + ext.extra.price * ext.quantity, 0) || 0)) * item.quantity).toFixed(2).replace('.', ',')}
                         </p>
                       </div>
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-center gap-3">
                           <button 
-                            onClick={() => updateCartQuantity(item.product.id, item.quantity - 1, item.observation)}
+                            onClick={() => updateCartQuantity(item.id!, item.quantity - 1)}
                             className="w-8 h-8 rounded-full bg-neutral-100 font-bold text-neutral-600 flex items-center justify-center hover:bg-neutral-200"
                           >-</button>
                           <span className="font-bold w-4 text-center">{item.quantity}</span>
                           <button 
-                            onClick={() => updateCartQuantity(item.product.id, item.quantity + 1, item.observation)}
+                            onClick={() => updateCartQuantity(item.id!, item.quantity + 1)}
                             className="w-8 h-8 rounded-full bg-red-100 font-bold text-red-600 flex items-center justify-center hover:bg-red-200"
                           >+</button>
                         </div>
                         <button 
-                          onClick={() => removeFromCart(item.product.id, item.observation)}
+                          onClick={() => removeFromCart(item.id!)}
                           className="w-8 h-8 rounded-full bg-white text-neutral-400 hover:text-red-600 hover:bg-red-50 flex items-center justify-center transition-colors"
                         >
                           <X className="w-4 h-4" />

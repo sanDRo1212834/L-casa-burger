@@ -2,9 +2,13 @@
 -- Run this in your Supabase SQL Editor
 
 -- 1. Create Tables
+-- If you are updating an existing database, run:
+-- ALTER TABLE public.categories ADD COLUMN IF NOT EXISTS extras JSONB DEFAULT '[]'::jsonb;
+--
 CREATE TABLE public.categories (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
+    extras JSONB DEFAULT '[]'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

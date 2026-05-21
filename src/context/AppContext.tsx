@@ -39,9 +39,9 @@ type AppState = {
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
   cart: CartItem[];
-  addToCart: (product: Product, quantity?: number, observation?: string) => void;
-  removeFromCart: (productId: string, observation?: string) => void;
-  updateCartQuantity: (productId: string, quantity: number, observation?: string) => void;
+  addToCart: (product: Product, quantity?: number, observation?: string, selectedExtras?: CartItemExtra[]) => void;
+  removeFromCart: (cartItemId: string) => void;
+  updateCartQuantity: (cartItemId: string, quantity: number) => void;
   clearCart: () => void;
   cartTotal: number;
 
@@ -173,30 +173,41 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     fetchData();
   }, []);
 
-  const cartTotal = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+  const cartTotal = cart.reduce((sum, item) => {
+    const extrasTotal = item.selectedExtras?.reduce((extSum, ext) => extSum + (ext.extra.price * ext.quantity), 0) || 0;
+    return sum + ((item.product.price + extrasTotal) * item.quantity);
+  }, 0);
 
   // --- Cart Methods ---
-  const addToCart = (product: Product, quantity = 1, observation = '') => {
+  const addToCart = (product: Product, quantity = 1, observation = '', selectedExtras: CartItemExtra[] = []) => {
     setCart(prev => {
-      // Find exact same product with same observation
-      const existing = prev.find(item => item.product.id === product.id && (item.observation || '') === observation);
+      // Find exact same product, observation, and extras
+      const existing = prev.find(item => {
+        if (item.product.id !== product.id || (item.observation || '') !== observation) return false;
+        
+        // Match extras
+        const itemExtrasStr = JSON.stringify(item.selectedExtras || []);
+        const newExtrasStr = JSON.stringify(selectedExtras || []);
+        return itemExtrasStr === newExtrasStr;
+      });
+
       if (existing) {
-        return prev.map(item => (item.product.id === product.id && (item.observation || '') === observation) ? { ...item, quantity: item.quantity + quantity } : item);
+        return prev.map(item => item.id === existing.id ? { ...item, quantity: item.quantity + quantity } : item);
       }
-      return [...prev, { product, quantity, observation }];
+      return [...prev, { id: Math.random().toString(36).substr(2, 9), product, quantity, observation, selectedExtras }];
     });
   };
 
-  const removeFromCart = (productId: string, observation = '') => {
-    setCart(prev => prev.filter(item => !(item.product.id === productId && (item.observation || '') === observation)));
+  const removeFromCart = (cartItemId: string) => {
+    setCart(prev => prev.filter(item => item.id !== cartItemId));
   };
 
-  const updateCartQuantity = (productId: string, quantity: number, observation = '') => {
+  const updateCartQuantity = (cartItemId: string, quantity: number) => {
     if (quantity <= 0) {
-      removeFromCart(productId, observation);
+      removeFromCart(cartItemId);
       return;
     }
-    setCart(prev => prev.map(item => (item.product.id === productId && (item.observation || '') === observation) ? { ...item, quantity } : item));
+    setCart(prev => prev.map(item => item.id === cartItemId ? { ...item, quantity } : item));
   };
 
   const clearCart = () => setCart([]);

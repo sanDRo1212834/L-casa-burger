@@ -1,17 +1,45 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { X } from 'lucide-react';
-import { Product } from '../types';
+import { X, Plus, Minus } from 'lucide-react';
+import { Product, CartItemExtra, Extra } from '../types';
 import { useAppContext } from '../context/AppContext';
 
 export function ProductModal({ product, onClose }: { product: Product, onClose: () => void }) {
-  const { addToCart } = useAppContext();
+  const { addToCart, categories } = useAppContext();
   const [quantity, setQuantity] = useState(1);
   const [observation, setObservation] = useState('');
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [selectedExtras, setSelectedExtras] = useState<CartItemExtra[]>([]);
+
+  const category = categories.find(c => c.id === product.categoryId);
+  const availableExtras = category?.extras || [];
+
+  const handleToggleExtra = (extra: Extra) => {
+    setSelectedExtras(prev => {
+      const existing = prev.find(e => e.extra.id === extra.id);
+      if (existing) {
+        return prev.filter(e => e.extra.id !== extra.id);
+      } else {
+        return [...prev, { extra, quantity: 1 }];
+      }
+    });
+  };
+
+  const handleExtraQuantity = (extraId: string, delta: number) => {
+    setSelectedExtras(prev => prev.map(e => {
+      if (e.extra.id === extraId) {
+        const newQuantity = Math.max(1, e.quantity + delta);
+        return { ...e, quantity: newQuantity };
+      }
+      return e;
+    }));
+  };
+
+  const extrasTotal = selectedExtras.reduce((sum, item) => sum + (item.extra.price * item.quantity), 0);
+  const finalPrice = (product.price + extrasTotal) * quantity;
 
   const handleAdd = () => {
-    addToCart(product, quantity, observation);
+    addToCart(product, quantity, observation, selectedExtras);
     onClose();
   };
 
@@ -41,9 +69,47 @@ export function ProductModal({ product, onClose }: { product: Product, onClose: 
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto flex-1">
+        <div className="p-6 overflow-y-auto flex-1 hide-scrollbar">
           <h2 className="text-2xl font-black text-neutral-900 mb-2">{product.name}</h2>
           <p className="text-neutral-500 mb-6">{product.description}</p>
+
+          {availableExtras.length > 0 && (
+            <div className="mb-6">
+              <h3 className="font-bold text-lg text-neutral-900 mb-3 block">Adicionais</h3>
+              <div className="space-y-3">
+                {availableExtras.map(extra => {
+                  const selected = selectedExtras.find(e => e.extra.id === extra.id);
+                  return (
+                    <div key={extra.id} className="flex items-center justify-between p-3 rounded-2xl border border-neutral-100 bg-neutral-50 cursor-pointer" onClick={(e) => {
+                      if ((e.target as HTMLElement).closest('.qty-btn')) return;
+                      handleToggleExtra(extra);
+                    }}>
+                      <div>
+                        <p className="font-bold text-neutral-800">{extra.name}</p>
+                        <p className="text-sm font-bold text-green-600">+ R$ {extra.price.toFixed(2).replace('.', ',')}</p>
+                      </div>
+                      
+                      {selected ? (
+                        <div className="flex items-center gap-3 qty-btn">
+                          <button onClick={(e) => { e.stopPropagation(); handleExtraQuantity(extra.id, -1); }} className="w-8 h-8 rounded-full bg-white border border-neutral-200 flex items-center justify-center hover:bg-neutral-100">
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <span className="font-bold w-4 text-center">{selected.quantity}</span>
+                          <button onClick={(e) => { e.stopPropagation(); handleExtraQuantity(extra.id, 1); }} className="w-8 h-8 rounded-full bg-white border border-neutral-200 flex items-center justify-center hover:bg-neutral-100">
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-8 h-8 rounded-full border-2 border-neutral-300 flex items-center justify-center text-neutral-400">
+                          <Plus className="w-4 h-4" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           <h3 className="font-bold text-lg text-neutral-900 mb-3">Alguma observação?</h3>
           <textarea 
@@ -72,7 +138,7 @@ export function ProductModal({ product, onClose }: { product: Product, onClose: 
             className="flex-1 py-4 rounded-full font-bold text-lg bg-yellow-400 hover:bg-yellow-500 text-black shadow-lg shadow-yellow-400/20 transition-all flex justify-between items-center px-6"
           >
             <span>Adicionar</span>
-            <span>R$ {(product.price * quantity).toFixed(2).replace('.', ',')}</span>
+            <span>R$ {finalPrice.toFixed(2).replace('.', ',')}</span>
           </button>
         </div>
       </motion.div>

@@ -1,6 +1,13 @@
+export type Extra = {
+  id: string;
+  name: string;
+  price: number;
+};
+
 export type Category = {
   id: string;
   name: string;
+  extras?: Extra[];
 };
 
 export type Product = {
@@ -15,10 +22,17 @@ export type Product = {
   likes?: number;
 };
 
+export type CartItemExtra = {
+  extra: Extra;
+  quantity: number;
+};
+
 export type CartItem = {
+  id?: string;
   product: Product;
   quantity: number;
   observation?: string;
+  selectedExtras?: CartItemExtra[];
 };
 
 export type Address = {
