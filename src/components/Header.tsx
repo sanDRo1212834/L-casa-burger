@@ -57,6 +57,14 @@ export function Header() {
                           Área do Admin
                         </button>
                       )}
+                      {!user && (
+                        <button 
+                          onClick={() => setView('login')}
+                          className="text-sm font-bold text-yellow-400 hover:text-yellow-300 transition-colors"
+                        >
+                          Entrar
+                        </button>
+                      )}
                       {user && (
                         <button 
                           onClick={async () => {

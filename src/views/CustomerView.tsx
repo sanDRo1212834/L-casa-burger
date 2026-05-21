@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShoppingBag, ChevronRight, X, Loader2, MapPin, Map, CreditCard, Banknote, Smartphone, Store, Home, Receipt, TicketPercent, ShoppingCart, Search, CheckCircle2, Contact2, Package, Settings, Minus, Plus, Heart } from 'lucide-react';
+import { ShoppingBag, ChevronRight, X, Loader2, MapPin, Map, CreditCard, Banknote, Smartphone, Store, Home, Receipt, TicketPercent, ShoppingCart, Search, CheckCircle2, Contact2, Package, Settings, Minus, Plus, Heart, User } from 'lucide-react';
 import { fetchAddressByCep } from '../context/utils/cep';
 import { Product, Address, DeliveryType, PaymentMethod } from '../types';
 import { ProductModal } from '../components/ProductModal';
@@ -314,6 +314,7 @@ function CustomerBottomNav({ activeTab, setActiveTab }: { activeTab: string, set
           active={false} 
           onClick={() => setIsCartOpen(true)} 
         />
+        <BottomNavItem icon={<User />} label="Conta" active={false} onClick={() => setView('login')} />
       </div>
     </nav>
   );
