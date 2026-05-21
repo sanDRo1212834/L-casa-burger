@@ -15,6 +15,7 @@ export function Header() {
           <div 
             className={`flex items-center gap-3 cursor-pointer group transition-all duration-300 ${isSearchExpanded ? 'hidden sm:flex' : 'flex'}`}
             onClick={() => setView('customer')}
+            onDoubleClick={() => setView('login')}
           >
             {/* Logo Image */}
             <div className="relative w-12 h-12 rounded-full overflow-hidden transform group-hover:scale-105 transition-transform shadow-md border-2 border-yellow-400">

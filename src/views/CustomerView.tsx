@@ -314,7 +314,6 @@ function CustomerBottomNav({ activeTab, setActiveTab }: { activeTab: string, set
           active={false} 
           onClick={() => setIsCartOpen(true)} 
         />
-        <BottomNavItem icon={<Settings />} label="Admin" active={false} onClick={() => setView('login')} />
       </div>
     </nav>
   );

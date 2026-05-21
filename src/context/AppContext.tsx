@@ -63,12 +63,12 @@ type AppState = {
   isAdmin: boolean;
 };
 
-export const ADMIN_EMAILS = ['sousasandro419@gmail.com', 'admin@email.com', 'lucycosta308@gmail.com'];
+export const ADMIN_EMAILS = ['lucycosta308@gmail.com'];
 const AppContext = createContext<AppState | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [view, setView] = useState<'customer' | 'admin' | 'login'>('customer');
-  const [user, setUser] = useState<any>({ email: 'sousasandro419@gmail.com' });
+  const [user, setUser] = useState<any>(null);
   
   const isAdmin = user ? ADMIN_EMAILS.includes(user.email.toLowerCase()) : false;
   
