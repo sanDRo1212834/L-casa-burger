@@ -21,14 +21,18 @@ export function LoginView() {
 
   useEffect(() => {
     if (isSupabaseConfigured()) {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) {
-          setUser(session.user);
-          if (ADMIN_EMAILS.includes(session.user.email?.toLowerCase() || '')) {
-            setView('admin');
+      supabase.auth.getSession()
+        .then(({ data: { session } }) => {
+          if (session) {
+            setUser(session.user);
+            if (ADMIN_EMAILS.includes(session.user.email?.toLowerCase() || '')) {
+              setView('admin');
+            }
           }
-        }
-      });
+        })
+        .catch((err) => {
+          console.warn("Supabase auth check failed:", err.message);
+        });
 
       const {
         data: { subscription },
@@ -53,32 +57,52 @@ export function LoginView() {
     
     if (isSupabaseConfigured()) {
       setLoading(true);
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      setLoading(false);
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        setLoading(false);
 
-      if (error) {
-        setErrorMsg(error.message);
+        if (error) {
+          if (error.message === 'Failed to fetch') {
+            handleLocalLogin();
+          } else {
+            setErrorMsg(error.message);
+          }
+        }
+      } catch (err: any) {
+        setLoading(false);
+        if (err?.message === 'Failed to fetch') {
+          handleLocalLogin();
+        } else {
+          setErrorMsg(err?.message || 'Erro desconhecido');
+        }
       }
     } else {
-      // Fallback local logic se não houver supabase
-      if (email.toLowerCase() === 'lucycosta308@gmail.com' && password !== '99924224') {
-        setErrorMsg('Senha incorreta para esta conta.');
-        return;
-      }
-      
-      if (password.length >= 3) {
+      handleLocalLogin();
+    }
+  };
+
+  const handleLocalLogin = () => {
+    // Fallback local logic se não houver supabase ou houver erro de conexão
+    if (email.toLowerCase() === 'lucycosta308@gmail.com' && password !== '99924224') {
+      setErrorMsg('Senha incorreta para esta conta.');
+      return;
+    }
+    
+    if (ADMIN_EMAILS.includes(email.toLowerCase())) {
+      if (password === '99924224') {
         setUser({ email });
-        if (ADMIN_EMAILS.includes(email.toLowerCase())) {
-          setView('admin');
-        } else {
-          setView('customer');
-        }
+        setView('admin');
       } else {
-        setErrorMsg('Senha inválida. (Mínimo 3 caracteres)');
+        setErrorMsg('Senha de administrador incorreta.');
       }
+    } else if (password.length >= 3) {
+      setUser({ email });
+      setView('customer');
+    } else {
+      setErrorMsg('Senha inválida. (Mínimo 3 caracteres)');
     }
   };
 
@@ -88,18 +112,31 @@ export function LoginView() {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: 'https://la-casa-burger.netlify.app',
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
-        },
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: 'https://la-casa-burger.netlify.app',
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        }
+      });
+      if (error) {
+        if (error.message === 'Failed to fetch') {
+          setErrorMsg('Erro de conexão com o servidor. Verifique sua internet ou tente login manual.');
+        } else {
+          setErrorMsg(error.message);
+        }
       }
-    });
-    if (error) {
-      setErrorMsg(error.message);
+    } catch (e: any) {
+      if (e?.message === 'Failed to fetch') {
+        setErrorMsg('Erro de conexão com o servidor. Verifique sua internet ou tente login manual.');
+      } else {
+        setErrorMsg(e?.message || 'Erro desconhecido');
+      }
+    } finally {
       setLoading(false);
     }
   };
@@ -126,10 +163,13 @@ export function LoginView() {
             <button 
               onClick={async () => {
                 if (isSupabaseConfigured()) {
-                  await supabase.auth.signOut();
-                } else {
-                  setUser(null);
+                  try {
+                    await supabase.auth.signOut();
+                  } catch (e) {
+                    console.warn(e);
+                  }
                 }
+                setUser(null);
                 setView('customer');
               }}
               className="w-full py-4 rounded-xl font-bold bg-neutral-700 hover:bg-red-600 text-white transition-colors uppercase tracking-widest text-sm mb-4 flex justify-center items-center gap-2"

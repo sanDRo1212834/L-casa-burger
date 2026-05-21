@@ -19,7 +19,11 @@ export function AdminView() {
     const isSupabaseConfigured = url && url !== "" && url !== "https://placeholder.supabase.co";
 
     if (isSupabaseConfigured) {
-      await supabase.auth.signOut();
+      try {
+        await supabase.auth.signOut();
+      } catch (err) {
+        console.warn("SignOut failed:", err);
+      }
     }
     setView('login');
   };

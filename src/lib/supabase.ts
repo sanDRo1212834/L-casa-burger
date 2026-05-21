@@ -24,4 +24,12 @@ const supabaseAnonKey = envKey && envKey !== ""
   ? envKey 
   : 'placeholder';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const isPlaceholder = supabaseUrl === 'https://placeholder.supabase.co';
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: !isPlaceholder,
+    persistSession: !isPlaceholder,
+    detectSessionInUrl: !isPlaceholder
+  }
+});

@@ -74,11 +74,14 @@ export function Header() {
                             }
                             // we must check if supabase is configured
                             if (url && url !== "" && url !== "https://placeholder.supabase.co") {
-                               const { supabase } = await import('../lib/supabase');
-                               await supabase.auth.signOut();
-                            } else {
-                               setUser(null);
+                               try {
+                                 const { supabase } = await import('../lib/supabase');
+                                 await supabase.auth.signOut();
+                               } catch (err) {
+                                 console.warn("Header signout failed:", err);
+                               }
                             }
+                            setUser(null);
                             setView('customer');
                           }}
                           className="text-sm font-medium text-neutral-400 hover:text-white transition-colors"

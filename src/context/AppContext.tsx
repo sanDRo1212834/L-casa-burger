@@ -117,22 +117,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (!isSupabaseConfigured()) return; // Fallback to mock data if no Supabase URL is set
     
     const fetchData = async () => {
-      const [{ data: cats }, { data: prods }, { data: ords }] = await Promise.all([
-        supabase.from('categories').select('*'),
-        supabase.from('products').select('*'),
-        supabase.from('orders').select('*').order('created_at', { ascending: false })
-      ]);
+      try {
+        const [{ data: cats }, { data: prods }, { data: ords }] = await Promise.all([
+          supabase.from('categories').select('*'),
+          supabase.from('products').select('*'),
+          supabase.from('orders').select('*').order('created_at', { ascending: false })
+        ]);
 
-      if (cats && cats.length > 0) setCategories(cats);
-      if (prods && prods.length > 0) setProducts(prods);
-      if (ords && ords.length > 0) {
-        setOrders(ords.map((o: any, idx: number) => ({
-          ...o,
-          orderNumber: ords.length - idx,
-          createdAt: o.created_at,
-          customerName: o.customer_name,
-          paymentMethod: o.payment_method
-        })));
+        if (cats && cats.length > 0) setCategories(cats);
+        if (prods && prods.length > 0) setProducts(prods);
+        if (ords && ords.length > 0) {
+          setOrders(ords.map((o: any, idx: number) => ({
+            ...o,
+            orderNumber: ords.length - idx,
+            createdAt: o.created_at,
+            customerName: o.customer_name,
+            paymentMethod: o.payment_method
+          })));
+        }
+      } catch (err) {
+        console.warn("Failed to fetch initial data from Supabase:", err);
       }
     };
     
@@ -171,7 +175,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addProduct = async (product: Product) => {
     setProducts(prev => [...prev, product]);
     if (isSupabaseConfigured()) {
-      await supabase.from('products').insert([{ ...product, category_id: product.categoryId }]);
+      try {
+        await supabase.from('products').insert([{ ...product, category_id: product.categoryId }]);
+      } catch (err) {
+        console.warn("addProduct sync failed:", err);
+      }
     }
   };
 
@@ -180,14 +188,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (isSupabaseConfigured()) {
       // Don't update the ID
       const { id, categoryId, ...rest } = updatedProduct;
-      await supabase.from('products').update({ ...rest, category_id: categoryId }).eq('id', updatedProduct.id);
+      try {
+        await supabase.from('products').update({ ...rest, category_id: categoryId }).eq('id', updatedProduct.id);
+      } catch (err) {
+         console.warn("updateProduct sync failed:", err);
+      }
     }
   };
 
   const removeProduct = async (id: string) => {
     setProducts(prev => prev.filter(p => p.id !== id));
     if (isSupabaseConfigured()) {
-      await supabase.from('products').delete().eq('id', id);
+      try {
+        await supabase.from('products').delete().eq('id', id);
+      } catch (err) {
+        console.warn("removeProduct sync failed:", err);
+      }
     }
   };
   
@@ -202,7 +218,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (p.id === productId) {
         const newLikes = Math.max(0, (p.likes || 0) + (isLiked ? -1 : 1));
         if (isSupabaseConfigured()) {
-          supabase.from('products').update({ likes: newLikes }).eq('id', productId);
+          try {
+            supabase.from('products').update({ likes: newLikes }).eq('id', productId);
+          } catch(err) {}
         }
         return { ...p, likes: newLikes };
       }
@@ -213,14 +231,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addCategory = async (category: Category) => {
     setCategories(prev => [...prev, category]);
     if (isSupabaseConfigured()) {
-      await supabase.from('categories').insert([category]);
+      try {
+        await supabase.from('categories').insert([category]);
+      } catch (err) {}
     }
   };
   
   const updateOrderStatus = async (orderId: string, status: Order['status']) => {
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
     if (isSupabaseConfigured()) {
-      await supabase.from('orders').update({ status }).eq('id', orderId);
+      try {
+        await supabase.from('orders').update({ status }).eq('id', orderId);
+      } catch (err) {}
     }
   };
 
@@ -240,7 +262,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         change_for: orderData.changeFor,
         address: orderData.address
       };
-      const { data, error } = await supabase.from('orders').insert([dbOrder]).select().single();
+      let data = null, error = null;
+      try {
+        const result = await supabase.from('orders').insert([dbOrder]).select().single();
+        data = result.data;
+        error = result.error;
+      } catch (err) {
+        console.warn("submitOrder sync failed:", err);
+      }
       
       newOrder = {
         ...orderData,
@@ -251,14 +280,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       // Realistically we also should update product stock in Supabase, but keeping it simple for the migration:
       if (!error) {
-         for (const item of orderData.items) {
-             const p = products.find(prod => prod.id === item.product.id);
-             if (p) {
-               await supabase.from('products').update({ 
-                 stock: Math.max(0, p.stock - item.quantity), 
-                 sales: p.sales + item.quantity 
-               }).eq('id', p.id);
-             }
+         try {
+           for (const item of orderData.items) {
+               const p = products.find(prod => prod.id === item.product.id);
+               if (p) {
+                 await supabase.from('products').update({ 
+                   stock: Math.max(0, p.stock - item.quantity), 
+                   sales: p.sales + item.quantity 
+                 }).eq('id', p.id);
+               }
+           }
+         } catch (updateErr) {
+           console.warn("Product stock update failed", updateErr);
          }
       }
     } else {
