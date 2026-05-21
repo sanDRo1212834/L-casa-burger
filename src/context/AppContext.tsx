@@ -66,7 +66,7 @@ type AppState = {
 const AppContext = createContext<AppState | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [view, setView] = useState<'customer' | 'admin' | 'login'>('admin');
+  const [view, setView] = useState<'customer' | 'admin' | 'login'>('customer');
   const [user, setUser] = useState<any>({ email: 'sousasandro419@gmail.com' });
   
   const adminEmails = ['sousasandro419@gmail.com', 'admin@email.com'];
