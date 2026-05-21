@@ -40,9 +40,31 @@ ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 
 -- Create Policies (Public read for categories and products, authenticated insert/update)
+DROP POLICY IF EXISTS "Enable read access for all users" ON public.categories;
+DROP POLICY IF EXISTS "Enable insert access for all users" ON public.categories;
+DROP POLICY IF EXISTS "Enable update access for all users" ON public.categories;
+DROP POLICY IF EXISTS "Enable delete access for all users" ON public.categories;
+
 CREATE POLICY "Enable read access for all users" ON public.categories FOR SELECT USING (true);
+CREATE POLICY "Enable insert access for all users" ON public.categories FOR INSERT WITH CHECK (true);
+CREATE POLICY "Enable update access for all users" ON public.categories FOR UPDATE USING (true);
+CREATE POLICY "Enable delete access for all users" ON public.categories FOR DELETE USING (true);
+
+DROP POLICY IF EXISTS "Enable read access for all users" ON public.products;
+DROP POLICY IF EXISTS "Enable insert access for all users" ON public.products;
+DROP POLICY IF EXISTS "Enable update access for all users" ON public.products;
+DROP POLICY IF EXISTS "Enable delete access for all users" ON public.products;
+
 CREATE POLICY "Enable read access for all users" ON public.products FOR SELECT USING (true);
+CREATE POLICY "Enable insert access for all users" ON public.products FOR INSERT WITH CHECK (true);
+CREATE POLICY "Enable update access for all users" ON public.products FOR UPDATE USING (true);
+CREATE POLICY "Enable delete access for all users" ON public.products FOR DELETE USING (true);
+
+DROP POLICY IF EXISTS "Enable insert for all users (demo purposes)" ON public.orders;
+DROP POLICY IF EXISTS "Enable read access for all users" ON public.orders;
+DROP POLICY IF EXISTS "Enable update access for all users" ON public.orders;
+
 CREATE POLICY "Enable insert for all users (demo purposes)" ON public.orders FOR INSERT WITH CHECK (true);
 CREATE POLICY "Enable read access for all users" ON public.orders FOR SELECT USING (true);
 CREATE POLICY "Enable update access for all users" ON public.orders FOR UPDATE USING (true);
-CREATE POLICY "Enable update access for all users" ON public.products FOR UPDATE USING (true);
+

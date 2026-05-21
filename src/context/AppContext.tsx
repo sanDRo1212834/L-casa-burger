@@ -205,7 +205,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addProduct = async (product: Product) => {
     if (isSupabaseConfigured()) {
       try {
-        const { categoryId, ...rest } = product;
+        const { id, categoryId, ...rest } = product; // Remove client-generated ID
         const { data, error } = await supabase.from('products').insert([{ ...rest, category_id: categoryId }]).select().single();
         if (error) {
           console.error("addProduct error:", error);
@@ -276,7 +276,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addCategory = async (category: Category) => {
     if (isSupabaseConfigured()) {
       try {
-        const { data, error } = await supabase.from('categories').insert([category]).select().single();
+        const { id, ...rest } = category; // omit local ID
+        const { data, error } = await supabase.from('categories').insert([rest]).select().single();
         if (error) {
           console.error("addCategory error:", error);
           setCategories(prev => [...prev, category]);
