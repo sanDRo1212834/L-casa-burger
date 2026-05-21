@@ -6,6 +6,10 @@ import { fetchAddressByCep } from '../context/utils/cep';
 import { Product, Address, DeliveryType, PaymentMethod } from '../types';
 import { ProductModal } from '../components/ProductModal';
 
+const formatPrice = (price: number) => {
+  return price.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+};
+
 export function CustomerView() {
   const { categories, products, addToCart, isCartOpen, setIsCartOpen, searchQuery, toggleLikeProduct, likedProducts, setView, myOrders } = useAppContext();
   const [activeCategory, setActiveCategory] = useState<string>('all');
