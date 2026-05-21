@@ -118,19 +118,42 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     
     const fetchData = async () => {
       try {
-        const [{ data: cats }, { data: prods }, { data: ords }] = await Promise.all([
+        const [catRes, prodRes, ordRes] = await Promise.all([
           supabase.from('categories').select('*'),
           supabase.from('products').select('*'),
           supabase.from('orders').select('*').order('created_at', { ascending: false })
         ]);
 
-        if (cats && cats.length > 0) setCategories(cats);
+        if (catRes.error) console.error("Error fetching categories:", catRes.error);
+        if (prodRes.error) console.error("Error fetching products:", prodRes.error);
+        if (ordRes.error) console.error("Error fetching orders:", ordRes.error);
+
+        const cats = catRes.data;
+        const prods = prodRes.data;
+        const ords = ordRes.data;
+
+        if (cats && cats.length > 0) {
+          setCategories(cats);
+        } else if (cats) {
+          setCategories([]);
+        }
+        
         if (prods && prods.length > 0) {
           setProducts(prods.map((p: any) => ({
             ...p,
-            categoryId: p.category_id || p.categoryId
+            categoryId: p.category_id || p.categoryId,
+            price: Number(p.price) || 0,
+            stock: Number(p.stock) || 0,
+            sales: Number(p.sales) || 0,
+            likes: Number(p.likes) || 0,
+            name: p.name || 'Produto sem nome',
+            description: p.description || '',
+            image: p.image || 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&q=80&w=500',
           })));
+        } else if (prods) {
+          setProducts([]);
         }
+
         if (ords && ords.length > 0) {
           setOrders(ords.map((o: any, idx: number) => ({
             ...o,
@@ -139,6 +162,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             customerName: o.customer_name,
             paymentMethod: o.payment_method
           })));
+        } else if (ords) {
+          setOrders([]);
         }
       } catch (err) {
         console.warn("Failed to fetch initial data from Supabase:", err);
@@ -180,7 +205,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addProduct = async (product: Product) => {
     if (isSupabaseConfigured()) {
       try {
-        const { id, categoryId, ...rest } = product; // omit the local id
+        const { categoryId, ...rest } = product;
         const { data, error } = await supabase.from('products').insert([{ ...rest, category_id: categoryId }]).select().single();
         if (error) {
           console.error("addProduct error:", error);
@@ -251,8 +276,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addCategory = async (category: Category) => {
     if (isSupabaseConfigured()) {
       try {
-        const { id, ...rest } = category;
-        const { data, error } = await supabase.from('categories').insert([rest]).select().single();
+        const { data, error } = await supabase.from('categories').insert([category]).select().single();
         if (error) {
           console.error("addCategory error:", error);
           setCategories(prev => [...prev, category]);
