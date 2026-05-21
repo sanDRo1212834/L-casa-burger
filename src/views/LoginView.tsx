@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAppContext } from '../context/AppContext';
+import { useAppContext, ADMIN_EMAILS } from '../context/AppContext';
 import { supabase } from '../lib/supabase';
 import { Mail, Key } from 'lucide-react';
 
@@ -24,8 +24,7 @@ export function LoginView() {
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session) {
           setUser(session.user);
-          const adminEmails = ['sousasandro419@gmail.com', 'admin@email.com'];
-          if (adminEmails.includes(session.user.email)) {
+          if (ADMIN_EMAILS.includes(session.user.email?.toLowerCase() || '')) {
             setView('admin');
           } else {
             setView('customer');
@@ -38,8 +37,7 @@ export function LoginView() {
       } = supabase.auth.onAuthStateChange((_event, session) => {
         if (session) {
           setUser(session.user);
-          const adminEmails = ['sousasandro419@gmail.com', 'admin@email.com'];
-          if (adminEmails.includes(session.user.email)) {
+          if (ADMIN_EMAILS.includes(session.user.email?.toLowerCase() || '')) {
             setView('admin');
           } else {
             setView('customer');
@@ -70,10 +68,14 @@ export function LoginView() {
       }
     } else {
       // Fallback local logic se não houver supabase
-      const adminEmails = ['sousasandro419@gmail.com', 'admin@email.com'];
+      if (email.toLowerCase() === 'lucycosta308@gmail.com' && password !== '99924224') {
+        setErrorMsg('Senha incorreta para esta conta.');
+        return;
+      }
+      
       if (password.length >= 3) {
         setUser({ email });
-        if (adminEmails.includes(email)) {
+        if (ADMIN_EMAILS.includes(email.toLowerCase())) {
           setView('admin');
         } else {
           setView('customer');
