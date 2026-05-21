@@ -178,14 +178,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // --- Admin Methods ---
   const addProduct = async (product: Product) => {
-    setProducts(prev => [...prev, product]);
     if (isSupabaseConfigured()) {
       try {
-        const { categoryId, ...rest } = product;
-        await supabase.from('products').insert([{ ...rest, category_id: categoryId }]);
+        const { id, categoryId, ...rest } = product; // omit the local id
+        const { data, error } = await supabase.from('products').insert([{ ...rest, category_id: categoryId }]).select().single();
+        if (error) {
+          console.error("addProduct error:", error);
+          // Fallback to local
+          setProducts(prev => [...prev, product]);
+        } else if (data) {
+          const newProduct: Product = {
+            ...product,
+            id: data.id, // Use DB id
+            categoryId: data.category_id || data.categoryId
+          };
+          setProducts(prev => [...prev, newProduct]);
+        }
       } catch (err) {
         console.warn("addProduct sync failed:", err);
+        setProducts(prev => [...prev, product]);
       }
+    } else {
+      setProducts(prev => [...prev, product]);
     }
   };
 
@@ -235,11 +249,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
   
   const addCategory = async (category: Category) => {
-    setCategories(prev => [...prev, category]);
     if (isSupabaseConfigured()) {
       try {
-        await supabase.from('categories').insert([category]);
-      } catch (err) {}
+        const { id, ...rest } = category;
+        const { data, error } = await supabase.from('categories').insert([rest]).select().single();
+        if (error) {
+          console.error("addCategory error:", error);
+          setCategories(prev => [...prev, category]);
+        } else if (data) {
+          setCategories(prev => [...prev, { ...category, id: data.id }]);
+        }
+      } catch (err) {
+        console.error("addCategory sync exception:", err);
+        setCategories(prev => [...prev, category]);
+      }
+    } else {
+      setCategories(prev => [...prev, category]);
     }
   };
   
