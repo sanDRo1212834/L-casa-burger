@@ -137,16 +137,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (cats && cats.length > 0) {
           const parsedCats = cats.map((c: any) => {
             let catExtras = c.extras || [];
-            // Inject default extras requested for "Hambúrguer" category if none exist
-            if ((!c.extras || c.extras.length === 0) && c.name && (c.name.toLowerCase().includes('hamb') || c.name.toLowerCase().includes('combo'))) {
-              catExtras = [
-                 { id: Math.random().toString(36).substr(2, 9), name: 'Geleia de pimenta', price: 2.00, type: 'extra' },
-                 { id: Math.random().toString(36).substr(2, 9), name: 'Ovo', price: 2.00, type: 'extra' },
-                 { id: Math.random().toString(36).substr(2, 9), name: 'Bacon', price: 2.00, type: 'extra' },
-                 { id: Math.random().toString(36).substr(2, 9), name: 'Abacaxi', price: 2.00, type: 'extra' },
-                 { id: Math.random().toString(36).substr(2, 9), name: 'Queijo coalho', price: 4.00, type: 'extra' },
-                 { id: Math.random().toString(36).substr(2, 9), name: 'Anéis de cebola', price: 2.00, type: 'extra' },
-              ];
+            if ((!c.extras || c.extras.length === 0) && c.name) {
+              const nameLower = c.name.toLowerCase();
+              if (nameLower.includes('hamb') || nameLower.includes('combo')) {
+                catExtras = [
+                   { id: Math.random().toString(36).substr(2, 9), name: 'Geleia de pimenta', price: 2.00, type: 'extra' },
+                   { id: Math.random().toString(36).substr(2, 9), name: 'Ovo', price: 2.00, type: 'extra' },
+                   { id: Math.random().toString(36).substr(2, 9), name: 'Bacon', price: 2.00, type: 'extra' },
+                   { id: Math.random().toString(36).substr(2, 9), name: 'Abacaxi', price: 2.00, type: 'extra' },
+                   { id: Math.random().toString(36).substr(2, 9), name: 'Queijo coalho', price: 4.00, type: 'extra' },
+                   { id: Math.random().toString(36).substr(2, 9), name: 'Anéis de cebola', price: 2.00, type: 'extra' },
+                ];
+              } else if (nameLower.includes('pastel')) {
+                catExtras = [
+                   { id: Math.random().toString(36).substr(2, 9), name: 'Frango', price: 0.00, type: 'extra' },
+                   { id: Math.random().toString(36).substr(2, 9), name: 'Carne', price: 0.00, type: 'extra' },
+                   { id: Math.random().toString(36).substr(2, 9), name: 'Bacon', price: 0.00, type: 'extra' },
+                   { id: Math.random().toString(36).substr(2, 9), name: 'Ovo', price: 0.00, type: 'extra' },
+                   { id: Math.random().toString(36).substr(2, 9), name: 'Presunto', price: 0.00, type: 'extra' },
+                   { id: Math.random().toString(36).substr(2, 9), name: 'Queijo', price: 0.00, type: 'extra' },
+                   { id: Math.random().toString(36).substr(2, 9), name: 'Tomate', price: 0.00, type: 'extra' },
+                   { id: Math.random().toString(36).substr(2, 9), name: 'Catupiry', price: 0.00, type: 'extra' },
+                   { id: Math.random().toString(36).substr(2, 9), name: 'Orégano', price: 0.00, type: 'extra' },
+                   { id: Math.random().toString(36).substr(2, 9), name: 'Cheddar', price: 0.00, type: 'extra' },
+                ];
+              }
             }
             return { ...c, extras: catExtras };
           });
