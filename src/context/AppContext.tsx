@@ -63,6 +63,8 @@ type AppState = {
   user: any;
   setUser: (user: any) => void;
   isAdmin: boolean;
+  
+  isLoadingData: boolean;
 };
 
 export const ADMIN_EMAILS = ['lucycosta308@gmail.com'];
@@ -71,8 +73,10 @@ const AppContext = createContext<AppState | undefined>(undefined);
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [view, setView] = useState<'customer' | 'admin' | 'login'>('customer');
   const [user, setUser] = useState<any>(null);
+  const [isLoadingData, setIsLoadingData] = useState<boolean>(isSupabaseConfigured());
   
   const isAdmin = user ? ADMIN_EMAILS.includes(user.email.toLowerCase()) : false;
+
   
   const [likedProducts, setLikedProducts] = useState<string[]>(() => {
     try {
@@ -123,7 +127,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const [catRes, prodRes, ordRes] = await Promise.all([
           supabase.from('categories').select('*'),
           supabase.from('products').select('*'),
-          supabase.from('orders').select('*').order('created_at', { ascending: false })
+          supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(300)
         ]);
 
         if (catRes.error) console.error("Error fetching categories:", catRes.error);
@@ -199,6 +203,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (err) {
         console.warn("Failed to fetch initial data from Supabase:", err);
+      } finally {
+        setIsLoadingData(false);
       }
     };
     
@@ -462,7 +468,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       toggleLikeProduct, likedProducts,
       isCartOpen, setIsCartOpen, cart, addToCart, removeFromCart, updateCartQuantity, clearCart, cartTotal,
       submitOrder, myOrders,
-      user, setUser, isAdmin
+      user, setUser, isAdmin,
+      isLoadingData
     }}>
       {children}
     </AppContext.Provider>

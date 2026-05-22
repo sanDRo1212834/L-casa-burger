@@ -5,9 +5,18 @@ import { CustomerView } from './views/CustomerView';
 import { AdminView } from './views/AdminView';
 import { LoginView } from './views/LoginView';
 import { PWAPrompt } from './components/PWAPrompt';
+import { Loader2 } from 'lucide-react';
 
 function AppContent() {
-  const { view } = useAppContext();
+  const { view, isLoadingData } = useAppContext();
+
+  if (isLoadingData) {
+    return (
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <Loader2 className="w-12 h-12 animate-spin text-red-600" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-neutral-50 font-sans text-neutral-900 selection:bg-red-500 selection:text-white">
