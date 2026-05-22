@@ -660,7 +660,7 @@ function ProductsTab() {
                       {c.extras && c.extras.length > 0 ? (
                         <div className="flex flex-wrap gap-2">
                           {c.extras.map(e => (
-                            <span key={e.id} className="bg-neutral-100 text-neutral-700 px-2 py-1 text-xs rounded-lg font-medium border border-neutral-200">
+                            <span key={e.id} className={`px-2 py-1 text-xs rounded-lg font-medium border ${e.type === 'combo' ? 'bg-orange-100 text-orange-800 border-orange-200' : 'bg-neutral-100 text-neutral-700 border-neutral-200'}`}>
                               {e.name} (R$ {e.price.toFixed(2).replace('.', ',')})
                             </span>
                           ))}
