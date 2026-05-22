@@ -12,7 +12,10 @@ export function ProductModal({ product, onClose }: { product: Product, onClose: 
   const [selectedExtras, setSelectedExtras] = useState<CartItemExtra[]>([]);
 
   const category = categories.find(c => c.id === product.categoryId);
-  const availableExtras = category?.extras || [];
+  const availableExtras = [...(category?.extras || []), ...(product.extras || [])];
+
+  // Remove duplicates by ID just in case
+  const uniqueExtras = Array.from(new Map(availableExtras.map(item => [item.name.toLowerCase(), item])).values());
 
   const handleToggleExtra = (extra: Extra) => {
     setSelectedExtras(prev => {
@@ -73,11 +76,11 @@ export function ProductModal({ product, onClose }: { product: Product, onClose: 
           <h2 className="text-2xl font-black text-neutral-900 mb-2">{product.name}</h2>
           <p className="text-neutral-500 mb-6">{product.description}</p>
 
-          {availableExtras.length > 0 && (
+          {uniqueExtras.length > 0 && (
             <div className="mb-6">
               <h3 className="font-bold text-lg text-neutral-900 mb-3 block">Adicionais</h3>
               <div className="space-y-3">
-                {availableExtras.map(extra => {
+                {uniqueExtras.map(extra => {
                   const selected = selectedExtras.find(e => e.extra.id === extra.id);
                   return (
                     <div key={extra.id} className="flex items-center justify-between p-3 rounded-2xl border border-neutral-100 bg-neutral-50 cursor-pointer" onClick={(e) => {

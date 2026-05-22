@@ -20,6 +20,7 @@ export type Product = {
   stock: number;
   sales: number; // For "mais saídos" carousel
   likes?: number;
+  extras?: Extra[];
 };
 
 export type CartItemExtra = {

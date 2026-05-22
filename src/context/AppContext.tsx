@@ -135,7 +135,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const ords = ordRes.data;
 
         if (cats && cats.length > 0) {
-          setCategories(cats);
+          const parsedCats = cats.map((c: any) => {
+            let catExtras = c.extras || [];
+            // Inject default extras requested for "Hambúrguer" category if none exist
+            if ((!c.extras || c.extras.length === 0) && c.name && c.name.toLowerCase().includes('hamb')) {
+              catExtras = [
+                 { id: Math.random().toString(36).substr(2, 9), name: 'Geleia de pimenta', price: 2.00 },
+                 { id: Math.random().toString(36).substr(2, 9), name: 'Ovo', price: 2.00 },
+                 { id: Math.random().toString(36).substr(2, 9), name: 'Bacon', price: 2.00 },
+                 { id: Math.random().toString(36).substr(2, 9), name: 'Abacaxi', price: 2.00 },
+                 { id: Math.random().toString(36).substr(2, 9), name: 'Queijo coalho', price: 4.00 },
+                 { id: Math.random().toString(36).substr(2, 9), name: 'Anéis de cebola', price: 2.00 },
+              ];
+            }
+            return { ...c, extras: catExtras };
+          });
+          setCategories(parsedCats);
         } else if (cats) {
           setCategories([]);
         }

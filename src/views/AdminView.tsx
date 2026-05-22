@@ -368,6 +368,7 @@ function ProductsTab() {
   const [newProductStock, setNewProductStock] = useState('');
   const [newProductDesc, setNewProductDesc] = useState('');
   const [newProductImage, setNewProductImage] = useState('');
+  const [newProductExtras, setNewProductExtras] = useState<Extra[]>([]);
 
   // Formulário Categoria
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -387,8 +388,24 @@ function ProductsTab() {
     setNewExtraPrice('');
   };
 
-  const handleRemoveExtra = (id: string) => {
+  const handleAddExtraToProduct = () => {
+    if (!newExtraName || !newExtraPrice) return;
+    const extra: Extra = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: newExtraName,
+      price: parseFloat(newExtraPrice)
+    };
+    setNewProductExtras(prev => [...prev, extra]);
+    setNewExtraName('');
+    setNewExtraPrice('');
+  };
+
+  const handleRemoveCategoryExtra = (id: string) => {
     setNewCategoryExtras(prev => prev.filter(e => e.id !== id));
+  };
+
+  const handleRemoveProductExtra = (id: string) => {
+    setNewProductExtras(prev => prev.filter(e => e.id !== id));
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -410,6 +427,7 @@ function ProductsTab() {
     setNewProductStock('');
     setNewProductDesc('');
     setNewProductImage('');
+    setNewProductExtras([]);
     setShowProductModal(true);
   };
 
@@ -421,6 +439,7 @@ function ProductsTab() {
     setNewProductStock(product.stock.toString());
     setNewProductDesc(product.description || '');
     setNewProductImage(product.image);
+    setNewProductExtras(product.extras || []);
     setShowProductModal(true);
   };
 
@@ -437,7 +456,8 @@ function ProductsTab() {
         stock: parseInt(newProductStock) || 0,
         description: newProductDesc,
         image: newProductImage || 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&q=80&w=500', 
-        sales: products.find(p => p.id === editingProductId)?.sales || 0
+        sales: products.find(p => p.id === editingProductId)?.sales || 0,
+        extras: newProductExtras
       };
       updateProduct(updatedProduct);
     } else {
@@ -449,7 +469,8 @@ function ProductsTab() {
         stock: parseInt(newProductStock) || 0,
         description: newProductDesc,
         image: newProductImage || 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&q=80&w=500', 
-        sales: 0
+        sales: 0,
+        extras: newProductExtras
       };
       addProduct(product);
     }
@@ -463,6 +484,7 @@ function ProductsTab() {
     setNewProductStock('');
     setNewProductDesc('');
     setNewProductImage('');
+    setNewProductExtras([]);
   };
 
   const openNewCategoryModal = () => {
@@ -759,8 +781,35 @@ function ProductsTab() {
                   <textarea rows={3} value={newProductDesc} onChange={(e) => setNewProductDesc(e.target.value)} placeholder="Descrição do produto..." className="w-full p-3 rounded-xl border border-neutral-200 focus:border-red-600 outline-none resize-none" />
                 </div>
 
+                <div className="pt-4 border-t border-neutral-100">
+                  <label className="block text-sm font-bold text-neutral-600 mb-2">Adicionais Específicos para este Produto (Opcional)</label>
+                  <p className="text-xs text-neutral-500 mb-4">Adicionais gravados na categoria já valem para o produto.</p>
+                  <div className="flex gap-2 mb-4">
+                    <input type="text" value={newExtraName} onChange={e => setNewExtraName(e.target.value)} placeholder="Ex: Bacon Extra" className="flex-1 p-3 rounded-xl border border-neutral-200 focus:border-red-600 outline-none" />
+                    <input type="number" step="0.01" value={newExtraPrice} onChange={e => setNewExtraPrice(e.target.value)} placeholder="Preço" className="w-24 p-3 rounded-xl border border-neutral-200 focus:border-red-600 outline-none" />
+                    <button type="button" onClick={handleAddExtraToProduct} className="bg-neutral-900 text-white p-3 rounded-xl hover:bg-neutral-800 transition-colors">
+                      <Plus className="w-5 h-5"/>
+                    </button>
+                  </div>
+                  {newProductExtras.length > 0 && (
+                    <ul className="space-y-2 mb-4">
+                      {newProductExtras.map(extra => (
+                        <li key={extra.id} className="flex justify-between items-center bg-neutral-50 p-3 rounded-xl border border-neutral-100">
+                          <div>
+                            <p className="font-bold text-sm text-neutral-800">{extra.name}</p>
+                            <p className="text-xs text-neutral-500 text-green-600 font-bold">R$ {extra.price.toFixed(2).replace('.', ',')}</p>
+                          </div>
+                          <button type="button" onClick={() => handleRemoveProductExtra(extra.id)} className="text-red-500 hover:text-red-700">
+                            <X className="w-4 h-4"/>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
                 <button type="submit" className="w-full py-4 mt-2 bg-yellow-400 text-black rounded-xl font-bold hover:bg-yellow-500 transition-colors uppercase tracking-wide">
-                  Cadastrar Produto
+                  {editingProductId ? 'Salvar Alterações' : 'Cadastrar Produto'}
                 </button>
              </form>
           </div>
