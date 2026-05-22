@@ -390,6 +390,47 @@ function ProductsTab() {
   // Tab states for Products/Categories view
   const [subTab, setSubTab] = useState<'products' | 'categories'>('products');
 
+  // Camera states
+  const [showCamera, setShowCamera] = useState(false);
+  const videoRef = React.useRef<HTMLVideoElement>(null);
+  const streamRef = React.useRef<MediaStream | null>(null);
+
+  const startCamera = async () => {
+    try {
+      setShowCamera(true);
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      streamRef.current = stream;
+    } catch (err) {
+      alert("Não foi possível acessar a câmera do navegador. Use o botão Galeria ou tente novamente.");
+      setShowCamera(false);
+    }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
+    setShowCamera(false);
+  };
+
+  const takePhoto = () => {
+    if (videoRef.current) {
+      const canvas = document.createElement('canvas');
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+        setNewProductImage(canvas.toDataURL('image/jpeg', 0.8));
+        stopCamera();
+      }
+    }
+  };
+
   // Formulário Produto
   const [newProductName, setNewProductName] = useState('');
   const [newProductCategory, setNewProductCategory] = useState('');
@@ -830,21 +871,32 @@ function ProductsTab() {
 
                 <div>
                   <label className="block text-sm font-bold text-neutral-600 mb-2">Imagem do Produto</label>
-                  {newProductImage ? (
+                  {showCamera ? (
+                    <div className="w-full flex justify-center items-center flex-col bg-neutral-900 rounded-xl overflow-hidden relative">
+                      <video ref={videoRef} autoPlay playsInline className="w-full h-48 object-cover"></video>
+                      <div className="absolute bottom-4 flex gap-4">
+                        <button type="button" onClick={takePhoto} className="bg-red-600 text-white font-bold p-3 rounded-full hover:bg-red-700 transition-colors shadow-lg">
+                          Tirar Foto
+                        </button>
+                        <button type="button" onClick={stopCamera} className="bg-white/20 backdrop-blur text-white font-bold p-3 rounded-full hover:bg-white/30 transition-colors">
+                          <X className="w-6 h-6"/>
+                        </button>
+                      </div>
+                    </div>
+                  ) : newProductImage ? (
                     <label className="flex w-full h-40 border-2 border-neutral-300 border-dashed rounded-xl cursor-pointer bg-neutral-50 hover:bg-neutral-100 overflow-hidden relative transition-colors">
                       <img src={newProductImage} alt="Preview" className="w-full h-full object-cover" />
                       <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                     </label>
                   ) : (
                     <div className="flex gap-4">
-                      <label className="flex-1 flex flex-col items-center justify-center p-6 border-2 border-neutral-300 border-dashed rounded-xl cursor-pointer bg-neutral-50 hover:bg-neutral-100 transition-colors">
+                      <button type="button" onClick={startCamera} className="flex-1 flex flex-col items-center justify-center p-6 border-2 border-neutral-300 border-dashed rounded-xl shrink-0 cursor-pointer bg-neutral-50 hover:bg-neutral-100 transition-colors">
                         <Camera className="w-8 h-8 mb-2 text-neutral-400" />
-                        <span className="text-sm text-neutral-500 font-semibold mb-1">Câmera</span>
-                        <input type="file" accept="image/*" capture="environment" className="hidden" onChange={handleImageUpload} />
-                      </label>
+                        <span className="text-sm text-neutral-500 font-semibold mb-1">Câmera Web</span>
+                      </button>
                       <label className="flex-1 flex flex-col items-center justify-center p-6 border-2 border-neutral-300 border-dashed rounded-xl cursor-pointer bg-neutral-50 hover:bg-neutral-100 transition-colors">
                         <ImagePlus className="w-8 h-8 mb-2 text-neutral-400" />
-                        <span className="text-sm text-neutral-500 font-semibold mb-1">Galeria</span>
+                        <span className="text-sm text-neutral-500 font-semibold mb-1">Arquivo / Galeria</span>
                         <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                       </label>
                     </div>
