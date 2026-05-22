@@ -195,6 +195,34 @@ export function CustomerView() {
                     </div>
                     
                     <div className="border-t border-neutral-100 pt-4 mt-4">
+                      <div className="flex flex-col sm:flex-row justify-between gap-4 mb-4">
+                        <div className="text-sm font-medium text-neutral-600 bg-neutral-50 p-3 rounded-xl border border-neutral-100 flex-1">
+                          <p className="flex items-center gap-2 mb-1">
+                            <span className="font-bold text-neutral-900">Forma de Pagamento:</span> 
+                            {order.paymentMethod === 'pix' ? 'PIX' : order.paymentMethod === 'card_machine' ? 'Máquina de Cartão' : order.paymentMethod === 'money' ? 'Dinheiro' : 'Não informado'}
+                            {order.paymentMethod === 'money' && order.changeFor && ` (Troco para R$ ${order.changeFor.toFixed(2).replace('.', ',')})`}
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <span className="font-bold text-neutral-900">Entrega:</span> 
+                            {order.deliveryType === 'delivery' ? 'Delivery' : order.deliveryType === 'pickup' ? 'Retirada no Local' : 'Não informado'}
+                          </p>
+                        </div>
+                        <div className="flex items-center">
+                          <button 
+                            onClick={() => {
+                              order.items.forEach(item => {
+                                addToCart(item.product, item.quantity, item.observation, item.selectedExtras);
+                              });
+                              setIsCartOpen(true);
+                            }}
+                            className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold bg-neutral-900 text-white hover:bg-neutral-800 transition-colors flex items-center justify-center gap-2"
+                          >
+                            <ShoppingCart className="w-4 h-4" />
+                            Repetir Pedido
+                          </button>
+                        </div>
+                      </div>
+
                       <h4 className="text-sm font-bold text-neutral-700 mb-2 border-b border-neutral-50 pb-2">Itens do Pedido:</h4>
                       <ul className="space-y-2">
                         {order.items.map((item, idx) => {

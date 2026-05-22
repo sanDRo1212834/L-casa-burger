@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Category, Product, Order, Customer, Employee, TableReport, CartItem } from '../types';
+import { Category, Product, Order, Customer, Employee, TableReport, CartItem, CartItemExtra } from '../types';
 import { supabase } from '../lib/supabase';
 
 const getSupabaseUrl = () => {
