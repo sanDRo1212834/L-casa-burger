@@ -691,6 +691,14 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
                   </button>
                 </div>
                 
+                {paymentMethod === 'pix' && (
+                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4 p-4 bg-teal-50 border border-teal-200 rounded-xl">
+                     <p className="text-teal-900 font-bold mb-2">Chave PIX (Celular):</p>
+                     <p className="text-2xl font-black text-teal-700 tracking-wider mb-2">98984676536</p>
+                     <p className="text-sm text-teal-800">Uma mensagem por favor enviar o comprovante do pix!</p>
+                   </motion.div>
+                )}
+                
                 {paymentMethod === 'money' && (
                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
                      <input 
