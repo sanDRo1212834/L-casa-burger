@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { X, Plus, Minus } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { X, Plus, Minus, ChevronDown, ChevronUp } from 'lucide-react';
 import { Product, CartItemExtra, Extra } from '../types';
 import { useAppContext } from '../context/AppContext';
 
@@ -10,12 +10,16 @@ export function ProductModal({ product, onClose }: { product: Product, onClose: 
   const [observation, setObservation] = useState('');
   const [imageLoaded, setImageLoaded] = useState(false);
   const [selectedExtras, setSelectedExtras] = useState<CartItemExtra[]>([]);
+  const [isExtrasExpanded, setIsExtrasExpanded] = useState(true);
+  const [isCombosExpanded, setIsCombosExpanded] = useState(true);
 
   const category = categories.find(c => c.id === product.categoryId);
   const availableExtras = [...(category?.extras || []), ...(product.extras || [])];
 
   // Remove duplicates by ID just in case
-  const uniqueExtras = Array.from(new Map(availableExtras.map(item => [item.name.toLowerCase(), item])).values());
+  const uniqueExtrasArray = Array.from(new Map(availableExtras.map(item => [item.name.toLowerCase(), item])).values());
+  const justExtras = uniqueExtrasArray.filter(e => e.type !== 'combo');
+  const justCombos = uniqueExtrasArray.filter(e => e.type === 'combo');
 
   const handleToggleExtra = (extra: Extra) => {
     setSelectedExtras(prev => {
@@ -76,41 +80,109 @@ export function ProductModal({ product, onClose }: { product: Product, onClose: 
           <h2 className="text-2xl font-black text-neutral-900 mb-2">{product.name}</h2>
           <p className="text-neutral-500 mb-6">{product.description}</p>
 
-          {uniqueExtras.length > 0 && (
+          {justCombos.length > 0 && (
             <div className="mb-6">
-              <h3 className="font-bold text-lg text-neutral-900 mb-3 block">Adicionais</h3>
-              <div className="space-y-3">
-                {uniqueExtras.map(extra => {
-                  const selected = selectedExtras.find(e => e.extra.id === extra.id);
-                  return (
-                    <div key={extra.id} className="flex items-center justify-between p-3 rounded-2xl border border-neutral-100 bg-neutral-50 cursor-pointer" onClick={(e) => {
-                      if ((e.target as HTMLElement).closest('.qty-btn')) return;
-                      handleToggleExtra(extra);
-                    }}>
-                      <div>
-                        <p className="font-bold text-neutral-800">{extra.name}</p>
-                        <p className="text-sm font-bold text-green-600">+ R$ {extra.price.toFixed(2).replace('.', ',')}</p>
-                      </div>
-                      
-                      {selected ? (
-                        <div className="flex items-center gap-3 qty-btn">
-                          <button onClick={(e) => { e.stopPropagation(); handleExtraQuantity(extra.id, -1); }} className="w-8 h-8 rounded-full bg-white border border-neutral-200 flex items-center justify-center hover:bg-neutral-100">
-                            <Minus className="w-4 h-4" />
-                          </button>
-                          <span className="font-bold w-4 text-center">{selected.quantity}</span>
-                          <button onClick={(e) => { e.stopPropagation(); handleExtraQuantity(extra.id, 1); }} className="w-8 h-8 rounded-full bg-white border border-neutral-200 flex items-center justify-center hover:bg-neutral-100">
-                            <Plus className="w-4 h-4" />
-                          </button>
+              <button 
+                onClick={() => setIsCombosExpanded(!isCombosExpanded)} 
+                className="w-full flex items-center justify-between py-2 border-b border-neutral-100 mb-3 group"
+              >
+                <h3 className="font-bold text-lg text-neutral-900 group-hover:text-red-600 transition-colors">Combos</h3>
+                {isCombosExpanded ? <ChevronUp className="w-5 h-5 text-neutral-400" /> : <ChevronDown className="w-5 h-5 text-neutral-400" />}
+              </button>
+              <AnimatePresence>
+                {isCombosExpanded && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden space-y-3"
+                  >
+                    {justCombos.map(combo => {
+                      const selected = selectedExtras.find(e => e.extra.id === combo.id);
+                      return (
+                        <div key={combo.id} className="flex items-center justify-between p-3 rounded-2xl border border-neutral-100 bg-neutral-50 cursor-pointer" onClick={(e) => {
+                          if ((e.target as HTMLElement).closest('.qty-btn')) return;
+                          handleToggleExtra(combo);
+                        }}>
+                          <div>
+                            <p className="font-bold text-neutral-800">{combo.name}</p>
+                            <p className="text-sm font-bold text-green-600">+ R$ {combo.price.toFixed(2).replace('.', ',')}</p>
+                          </div>
+                          
+                          {selected ? (
+                            <div className="flex items-center gap-3 qty-btn">
+                              <button onClick={(e) => { e.stopPropagation(); handleExtraQuantity(combo.id, -1); }} className="w-8 h-8 rounded-full bg-white border border-neutral-200 flex items-center justify-center hover:bg-neutral-100">
+                                <Minus className="w-4 h-4" />
+                              </button>
+                              <span className="font-bold w-4 text-center">{selected.quantity}</span>
+                              <button onClick={(e) => { e.stopPropagation(); handleExtraQuantity(combo.id, 1); }} className="w-8 h-8 rounded-full bg-white border border-neutral-200 flex items-center justify-center hover:bg-neutral-100">
+                                <Plus className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="w-8 h-8 rounded-full border-2 border-neutral-300 flex items-center justify-center text-neutral-400">
+                              <Plus className="w-4 h-4" />
+                            </div>
+                          )}
                         </div>
-                      ) : (
-                        <div className="w-8 h-8 rounded-full border-2 border-neutral-300 flex items-center justify-center text-neutral-400">
-                          <Plus className="w-4 h-4" />
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+
+          {justExtras.length > 0 && (
+            <div className="mb-6">
+              <button 
+                onClick={() => setIsExtrasExpanded(!isExtrasExpanded)} 
+                className="w-full flex items-center justify-between py-2 border-b border-neutral-100 mb-3 group"
+              >
+                <h3 className="font-bold text-lg text-neutral-900 group-hover:text-red-600 transition-colors">Adicionais</h3>
+                {isExtrasExpanded ? <ChevronUp className="w-5 h-5 text-neutral-400" /> : <ChevronDown className="w-5 h-5 text-neutral-400" />}
+              </button>
+              <AnimatePresence>
+                {isExtrasExpanded && (
+                  <motion.div 
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden space-y-3"
+                  >
+                    {justExtras.map(extra => {
+                      const selected = selectedExtras.find(e => e.extra.id === extra.id);
+                      return (
+                        <div key={extra.id} className="flex items-center justify-between p-3 rounded-2xl border border-neutral-100 bg-neutral-50 cursor-pointer" onClick={(e) => {
+                          if ((e.target as HTMLElement).closest('.qty-btn')) return;
+                          handleToggleExtra(extra);
+                        }}>
+                          <div>
+                            <p className="font-bold text-neutral-800">{extra.name}</p>
+                            <p className="text-sm font-bold text-green-600">+ R$ {extra.price.toFixed(2).replace('.', ',')}</p>
+                          </div>
+                          
+                          {selected ? (
+                            <div className="flex items-center gap-3 qty-btn">
+                              <button onClick={(e) => { e.stopPropagation(); handleExtraQuantity(extra.id, -1); }} className="w-8 h-8 rounded-full bg-white border border-neutral-200 flex items-center justify-center hover:bg-neutral-100">
+                                <Minus className="w-4 h-4" />
+                              </button>
+                              <span className="font-bold w-4 text-center">{selected.quantity}</span>
+                              <button onClick={(e) => { e.stopPropagation(); handleExtraQuantity(extra.id, 1); }} className="w-8 h-8 rounded-full bg-white border border-neutral-200 flex items-center justify-center hover:bg-neutral-100">
+                                <Plus className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="w-8 h-8 rounded-full border-2 border-neutral-300 flex items-center justify-center text-neutral-400">
+                              <Plus className="w-4 h-4" />
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )}
 

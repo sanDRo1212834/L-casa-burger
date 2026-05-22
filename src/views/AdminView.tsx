@@ -375,29 +375,49 @@ function ProductsTab() {
   const [newCategoryExtras, setNewCategoryExtras] = useState<Extra[]>([]);
   const [newExtraName, setNewExtraName] = useState('');
   const [newExtraPrice, setNewExtraPrice] = useState('');
+  const [newComboName, setNewComboName] = useState('');
+  const [newComboPrice, setNewComboPrice] = useState('');
 
-  const handleAddExtraToCategory = () => {
-    if (!newExtraName || !newExtraPrice) return;
+  const handleAddExtraToCategory = (type: 'extra' | 'combo') => {
+    const isCombo = type === 'combo';
+    const name = isCombo ? newComboName : newExtraName;
+    const price = isCombo ? newComboPrice : newExtraPrice;
+    if (!name || !price) return;
     const extra: Extra = {
       id: Math.random().toString(36).substr(2, 9),
-      name: newExtraName,
-      price: parseFloat(newExtraPrice)
+      name: name,
+      price: parseFloat(price),
+      type: type
     };
     setNewCategoryExtras(prev => [...prev, extra]);
-    setNewExtraName('');
-    setNewExtraPrice('');
+    if (isCombo) {
+      setNewComboName('');
+      setNewComboPrice('');
+    } else {
+      setNewExtraName('');
+      setNewExtraPrice('');
+    }
   };
 
-  const handleAddExtraToProduct = () => {
-    if (!newExtraName || !newExtraPrice) return;
+  const handleAddExtraToProduct = (type: 'extra' | 'combo') => {
+    const isCombo = type === 'combo';
+    const name = isCombo ? newComboName : newExtraName;
+    const price = isCombo ? newComboPrice : newExtraPrice;
+    if (!name || !price) return;
     const extra: Extra = {
       id: Math.random().toString(36).substr(2, 9),
-      name: newExtraName,
-      price: parseFloat(newExtraPrice)
+      name: name,
+      price: parseFloat(price),
+      type: type
     };
     setNewProductExtras(prev => [...prev, extra]);
-    setNewExtraName('');
-    setNewExtraPrice('');
+    if (isCombo) {
+      setNewComboName('');
+      setNewComboPrice('');
+    } else {
+      setNewExtraName('');
+      setNewExtraPrice('');
+    }
   };
 
   const handleRemoveCategoryExtra = (id: string) => {
@@ -689,19 +709,45 @@ function ProductsTab() {
                   <div className="flex gap-2 mb-4">
                     <input type="text" value={newExtraName} onChange={e => setNewExtraName(e.target.value)} placeholder="Ex: Bacon" className="flex-1 p-3 rounded-xl border border-neutral-200 focus:border-red-600 outline-none" />
                     <input type="number" step="0.01" value={newExtraPrice} onChange={e => setNewExtraPrice(e.target.value)} placeholder="Preço" className="w-24 p-3 rounded-xl border border-neutral-200 focus:border-red-600 outline-none" />
-                    <button type="button" onClick={handleAddExtraToCategory} className="bg-neutral-900 text-white p-3 rounded-xl hover:bg-neutral-800 transition-colors">
+                    <button type="button" onClick={() => handleAddExtraToCategory('extra')} className="bg-neutral-900 text-white p-3 rounded-xl hover:bg-neutral-800 transition-colors">
                       <Plus className="w-5 h-5"/>
                     </button>
                   </div>
-                  {newCategoryExtras.length > 0 && (
+                  {newCategoryExtras.filter(e => e.type !== 'combo').length > 0 && (
                     <ul className="space-y-2 mb-4">
-                      {newCategoryExtras.map(extra => (
+                      {newCategoryExtras.filter(e => e.type !== 'combo').map(extra => (
                         <li key={extra.id} className="flex justify-between items-center bg-neutral-50 p-3 rounded-xl">
                           <div>
                             <p className="font-bold text-sm text-neutral-800">{extra.name}</p>
                             <p className="text-xs text-neutral-500 text-green-600 font-bold">R$ {extra.price.toFixed(2).replace('.', ',')}</p>
                           </div>
-                          <button type="button" onClick={() => handleRemoveExtra(extra.id)} className="text-red-500 hover:text-red-700">
+                          <button type="button" onClick={() => handleRemoveCategoryExtra(extra.id)} className="text-red-500 hover:text-red-700">
+                            <X className="w-4 h-4"/>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                <div className="pt-4 border-t border-neutral-100">
+                  <label className="block text-sm font-bold text-neutral-600 mb-2">Combos (Opcional)</label>
+                  <div className="flex gap-2 mb-4">
+                    <input type="text" value={newComboName} onChange={e => setNewComboName(e.target.value)} placeholder="Ex: Batata + Refri" className="flex-1 p-3 rounded-xl border border-neutral-200 focus:border-red-600 outline-none" />
+                    <input type="number" step="0.01" value={newComboPrice} onChange={e => setNewComboPrice(e.target.value)} placeholder="Preço" className="w-24 p-3 rounded-xl border border-neutral-200 focus:border-red-600 outline-none" />
+                    <button type="button" onClick={() => handleAddExtraToCategory('combo')} className="bg-neutral-900 text-white p-3 rounded-xl hover:bg-neutral-800 transition-colors">
+                      <Plus className="w-5 h-5"/>
+                    </button>
+                  </div>
+                  {newCategoryExtras.filter(e => e.type === 'combo').length > 0 && (
+                    <ul className="space-y-2 mb-4">
+                      {newCategoryExtras.filter(e => e.type === 'combo').map(combo => (
+                        <li key={combo.id} className="flex justify-between items-center bg-neutral-50 p-3 rounded-xl">
+                          <div>
+                            <p className="font-bold text-sm text-neutral-800">{combo.name}</p>
+                            <p className="text-xs text-neutral-500 text-green-600 font-bold">R$ {combo.price.toFixed(2).replace('.', ',')}</p>
+                          </div>
+                          <button type="button" onClick={() => handleRemoveCategoryExtra(combo.id)} className="text-red-500 hover:text-red-700">
                             <X className="w-4 h-4"/>
                           </button>
                         </li>
@@ -787,19 +833,45 @@ function ProductsTab() {
                   <div className="flex gap-2 mb-4">
                     <input type="text" value={newExtraName} onChange={e => setNewExtraName(e.target.value)} placeholder="Ex: Bacon Extra" className="flex-1 p-3 rounded-xl border border-neutral-200 focus:border-red-600 outline-none" />
                     <input type="number" step="0.01" value={newExtraPrice} onChange={e => setNewExtraPrice(e.target.value)} placeholder="Preço" className="w-24 p-3 rounded-xl border border-neutral-200 focus:border-red-600 outline-none" />
-                    <button type="button" onClick={handleAddExtraToProduct} className="bg-neutral-900 text-white p-3 rounded-xl hover:bg-neutral-800 transition-colors">
+                    <button type="button" onClick={() => handleAddExtraToProduct('extra')} className="bg-neutral-900 text-white p-3 rounded-xl hover:bg-neutral-800 transition-colors">
                       <Plus className="w-5 h-5"/>
                     </button>
                   </div>
-                  {newProductExtras.length > 0 && (
+                  {newProductExtras.filter(e => e.type !== 'combo').length > 0 && (
                     <ul className="space-y-2 mb-4">
-                      {newProductExtras.map(extra => (
+                      {newProductExtras.filter(e => e.type !== 'combo').map(extra => (
                         <li key={extra.id} className="flex justify-between items-center bg-neutral-50 p-3 rounded-xl border border-neutral-100">
                           <div>
                             <p className="font-bold text-sm text-neutral-800">{extra.name}</p>
                             <p className="text-xs text-neutral-500 text-green-600 font-bold">R$ {extra.price.toFixed(2).replace('.', ',')}</p>
                           </div>
                           <button type="button" onClick={() => handleRemoveProductExtra(extra.id)} className="text-red-500 hover:text-red-700">
+                            <X className="w-4 h-4"/>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                <div className="pt-4 border-t border-neutral-100">
+                  <label className="block text-sm font-bold text-neutral-600 mb-2">Combos Específicos para este Produto (Opcional)</label>
+                  <div className="flex gap-2 mb-4">
+                    <input type="text" value={newComboName} onChange={e => setNewComboName(e.target.value)} placeholder="Ex: Batata + Refri" className="flex-1 p-3 rounded-xl border border-neutral-200 focus:border-red-600 outline-none" />
+                    <input type="number" step="0.01" value={newComboPrice} onChange={e => setNewComboPrice(e.target.value)} placeholder="Preço" className="w-24 p-3 rounded-xl border border-neutral-200 focus:border-red-600 outline-none" />
+                    <button type="button" onClick={() => handleAddExtraToProduct('combo')} className="bg-neutral-900 text-white p-3 rounded-xl hover:bg-neutral-800 transition-colors">
+                      <Plus className="w-5 h-5"/>
+                    </button>
+                  </div>
+                  {newProductExtras.filter(e => e.type === 'combo').length > 0 && (
+                    <ul className="space-y-2 mb-4">
+                      {newProductExtras.filter(e => e.type === 'combo').map(combo => (
+                        <li key={combo.id} className="flex justify-between items-center bg-neutral-50 p-3 rounded-xl border border-neutral-100">
+                          <div>
+                            <p className="font-bold text-sm text-neutral-800">{combo.name}</p>
+                            <p className="text-xs text-neutral-500 text-green-600 font-bold">R$ {combo.price.toFixed(2).replace('.', ',')}</p>
+                          </div>
+                          <button type="button" onClick={() => handleRemoveProductExtra(combo.id)} className="text-red-500 hover:text-red-700">
                             <X className="w-4 h-4"/>
                           </button>
                         </li>
