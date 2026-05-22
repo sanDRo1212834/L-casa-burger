@@ -884,10 +884,17 @@ function ProductsTab() {
                       </div>
                     </div>
                   ) : newProductImage ? (
-                    <label className="flex w-full h-40 border-2 border-neutral-300 border-dashed rounded-xl cursor-pointer bg-neutral-50 hover:bg-neutral-100 overflow-hidden relative transition-colors">
+                    <div className="flex w-full h-40 border-2 border-neutral-300 border-dashed rounded-xl bg-neutral-50 overflow-hidden relative group">
                       <img src={newProductImage} alt="Preview" className="w-full h-full object-cover" />
-                      <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                    </label>
+                      <button 
+                        type="button" 
+                        onClick={() => setNewProductImage('')} 
+                        className="absolute top-3 right-3 p-2 bg-neutral-900/40 backdrop-blur-md text-white rounded-full hover:bg-red-600 transition-colors"
+                        title="Remover Imagem"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
                   ) : (
                     <div className="flex gap-4">
                       <button type="button" onClick={startCamera} className="flex-1 flex flex-col items-center justify-center p-6 border-2 border-neutral-300 border-dashed rounded-xl shrink-0 cursor-pointer bg-neutral-50 hover:bg-neutral-100 transition-colors">
