@@ -33,6 +33,8 @@ type AppState = {
   removeProduct: (id: string) => void;
   
   addCategory: (category: Category) => void;
+  updateCategory: (category: Category) => void;
+  removeCategory: (id: string) => void;
   updateOrderStatus: (orderId: string, status: Order['status']) => void;
 
   // Cart Actions
@@ -304,6 +306,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
   
+  const updateCategory = async (updatedCategory: Category) => {
+    setCategories(prev => prev.map(c => c.id === updatedCategory.id ? updatedCategory : c));
+    if (isSupabaseConfigured()) {
+      const { id, ...rest } = updatedCategory;
+      try {
+        await supabase.from('categories').update(rest).eq('id', updatedCategory.id);
+      } catch (err) {
+        console.warn("updateCategory sync failed:", err);
+      }
+    }
+  };
+
+  const removeCategory = async (id: string) => {
+    setCategories(prev => prev.filter(c => c.id !== id));
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from('categories').delete().eq('id', id);
+      } catch (err) {
+        console.warn("removeCategory sync failed:", err);
+      }
+    }
+  };
+  
   const updateOrderStatus = async (orderId: string, status: Order['status']) => {
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
     if (isSupabaseConfigured()) {
@@ -403,7 +428,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       view, setView,
       categories, products, orders, customers, employees, tables,
       searchQuery, setSearchQuery,
-      addProduct, updateProduct, removeProduct, addCategory, updateOrderStatus,
+      addProduct, updateProduct, removeProduct, addCategory, updateCategory, removeCategory, updateOrderStatus,
       toggleLikeProduct, likedProducts,
       isCartOpen, setIsCartOpen, cart, addToCart, removeFromCart, updateCartQuantity, clearCart, cartTotal,
       submitOrder, myOrders,

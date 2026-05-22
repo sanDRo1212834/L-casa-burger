@@ -351,11 +351,15 @@ function OrdersTab() {
 }
 
 function ProductsTab() {
-  const { products, categories, removeProduct, addProduct, addCategory, updateProduct } = useAppContext();
+  const { products, categories, removeProduct, addProduct, addCategory, updateProduct, updateCategory, removeCategory } = useAppContext();
   
   const [showProductModal, setShowProductModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+
+  // Tab states for Products/Categories view
+  const [subTab, setSubTab] = useState<'products' | 'categories'>('products');
 
   // Formulário Produto
   const [newProductName, setNewProductName] = useState('');
@@ -461,20 +465,43 @@ function ProductsTab() {
     setNewProductImage('');
   };
 
+  const openNewCategoryModal = () => {
+    setEditingCategoryId(null);
+    setNewCategoryName('');
+    setNewCategoryExtras([]);
+    setShowCategoryModal(true);
+  };
+
+  const openEditCategoryModal = (cat: Category) => {
+    setEditingCategoryId(cat.id);
+    setNewCategoryName(cat.name);
+    setNewCategoryExtras(cat.extras || []);
+    setShowCategoryModal(true);
+  };
+
   const handleAddCategory = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCategoryName) return;
     
-    const category: Category = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: newCategoryName,
-      extras: newCategoryExtras
-    };
+    if (editingCategoryId) {
+      updateCategory({
+        id: editingCategoryId,
+        name: newCategoryName,
+        extras: newCategoryExtras
+      });
+    } else {
+      const category: Category = {
+        id: Math.random().toString(36).substr(2, 9),
+        name: newCategoryName,
+        extras: newCategoryExtras
+      };
+      addCategory(category);
+    }
     
-    addCategory(category);
     setShowCategoryModal(false);
     setNewCategoryName('');
     setNewCategoryExtras([]);
+    setEditingCategoryId(null);
   }
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -487,9 +514,15 @@ function ProductsTab() {
   return (
     <div className="space-y-6 pb-20 md:pb-0">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-        <h2 className="text-2xl font-black text-neutral-900">Produtos & Estoque</h2>
+        <div className="flex items-center gap-4">
+          <h2 className="text-2xl font-black text-neutral-900">Catálogo</h2>
+          <div className="flex bg-neutral-100 p-1 rounded-xl">
+            <button onClick={() => setSubTab('products')} className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${subTab === 'products' ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500 hover:text-neutral-700'}`}>Produtos</button>
+            <button onClick={() => setSubTab('categories')} className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${subTab === 'categories' ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500 hover:text-neutral-700'}`}>Categorias</button>
+          </div>
+        </div>
         <div className="flex gap-2">
-          <button onClick={() => setShowCategoryModal(true)} className="bg-neutral-100 text-neutral-700 hover:bg-neutral-200 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-colors">
+          <button onClick={openNewCategoryModal} className="bg-neutral-100 text-neutral-700 hover:bg-neutral-200 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-colors">
             <Plus className="w-4 h-4" /> Nova Categoria
           </button>
           <button onClick={openNewProductModal} className="bg-neutral-900 text-white hover:bg-neutral-800 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-colors">
@@ -498,71 +531,122 @@ function ProductsTab() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
-        <div className="p-4 border-b border-neutral-100 flex items-center relative">
-          <Search className="w-5 h-5 text-neutral-400 absolute left-7" />
-          <input
-            type="text"
-            placeholder="Buscar produto por nome ou descrição..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-neutral-50 border border-neutral-200 rounded-xl focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition-colors"
-          />
+      {subTab === 'products' ? (
+        <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
+          <div className="p-4 border-b border-neutral-100 flex items-center relative">
+            <Search className="w-5 h-5 text-neutral-400 absolute left-7" />
+            <input
+              type="text"
+              placeholder="Buscar produto por nome ou descrição..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-neutral-50 border border-neutral-200 rounded-xl focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition-colors"
+            />
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[600px]">
+              <thead>
+                <tr className="bg-neutral-50 border-b border-neutral-200">
+                  <th className="p-4 text-sm font-bold text-neutral-600">Produto</th>
+                  <th className="p-4 text-sm font-bold text-neutral-600">Categoria</th>
+                  <th className="p-4 text-sm font-bold text-neutral-600">Preço</th>
+                  <th className="p-4 text-sm font-bold text-neutral-600">Estoque</th>
+                  <th className="p-4 text-sm font-bold text-neutral-600">Likes</th>
+                  <th className="p-4 text-sm font-bold text-neutral-600">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-100">
+                {filteredProducts.map(p => {
+                  const cat = categories.find(c => c.id === p.categoryId)?.name || '-';
+                  return (
+                    <tr key={p.id} className="hover:bg-neutral-50">
+                      <td className="p-4 flex items-center gap-3">
+                        <img src={p.image} className="w-10 h-10 rounded shadow-sm object-cover" alt="" />
+                        <span className="font-bold text-neutral-900">{p.name}</span>
+                      </td>
+                      <td className="p-4 text-neutral-600">{cat}</td>
+                      <td className="p-4 font-bold text-neutral-900">R$ {p.price.toFixed(2).replace('.', ',')}</td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-1 rounded text-xs font-bold ${p.stock <= 0 ? 'bg-red-100 text-red-700' : p.stock < 20 ? 'bg-yellow-100 text-yellow-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                            {p.stock}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-4 font-bold text-red-600 flex items-center gap-1.5 min-h-[73px]">
+                        <Heart className="w-4 h-4 fill-red-500" />
+                        {p.likes || 0}
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => openEditProductModal(p)} className="p-2 bg-neutral-100 rounded-lg text-neutral-600 hover:text-blue-600 transition-colors"><Edit className="w-4 h-4" /></button>
+                          <button onClick={() => removeProduct(p.id)} className="p-2 bg-neutral-100 rounded-lg text-neutral-600 hover:text-red-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+                {filteredProducts.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="p-8 text-center text-neutral-500">
+                      Nenhum produto encontrado.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[600px]">
-            <thead>
-              <tr className="bg-neutral-50 border-b border-neutral-200">
-                <th className="p-4 text-sm font-bold text-neutral-600">Produto</th>
-                <th className="p-4 text-sm font-bold text-neutral-600">Categoria</th>
-                <th className="p-4 text-sm font-bold text-neutral-600">Preço</th>
-                <th className="p-4 text-sm font-bold text-neutral-600">Estoque</th>
-                <th className="p-4 text-sm font-bold text-neutral-600">Likes</th>
-                <th className="p-4 text-sm font-bold text-neutral-600">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100">
-              {filteredProducts.map(p => {
-                const cat = categories.find(c => c.id === p.categoryId)?.name || '-';
-                return (
-                  <tr key={p.id} className="hover:bg-neutral-50">
-                    <td className="p-4 flex items-center gap-3">
-                      <img src={p.image} className="w-10 h-10 rounded shadow-sm object-cover" alt="" />
-                      <span className="font-bold text-neutral-900">{p.name}</span>
-                    </td>
-                    <td className="p-4 text-neutral-600">{cat}</td>
-                    <td className="p-4 font-bold text-neutral-900">R$ {p.price.toFixed(2).replace('.', ',')}</td>
+      ) : (
+        <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[600px]">
+              <thead>
+                <tr className="bg-neutral-50 border-b border-neutral-200">
+                  <th className="p-4 text-sm font-bold text-neutral-600">ID</th>
+                  <th className="p-4 text-sm font-bold text-neutral-600">Nome da Categoria</th>
+                  <th className="p-4 text-sm font-bold text-neutral-600">Adicionais Configurados</th>
+                  <th className="p-4 text-sm font-bold text-neutral-600 w-[120px]">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-neutral-100">
+                {categories.map(c => (
+                  <tr key={c.id} className="hover:bg-neutral-50">
+                    <td className="p-4 text-neutral-500 font-mono text-xs">{c.id.slice(0, 8)}</td>
+                    <td className="p-4 font-bold text-neutral-900">{c.name}</td>
                     <td className="p-4">
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 rounded text-xs font-bold ${p.stock <= 0 ? 'bg-red-100 text-red-700' : p.stock < 20 ? 'bg-yellow-100 text-yellow-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                          {p.stock}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="p-4 font-bold text-red-600 flex items-center gap-1.5 min-h-[73px]">
-                      <Heart className="w-4 h-4 fill-red-500" />
-                      {p.likes || 0}
+                      {c.extras && c.extras.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {c.extras.map(e => (
+                            <span key={e.id} className="bg-neutral-100 text-neutral-700 px-2 py-1 text-xs rounded-lg font-medium border border-neutral-200">
+                              {e.name} (R$ {e.price.toFixed(2).replace('.', ',')})
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-neutral-400 text-sm italic">Nenhum</span>
+                      )}
                     </td>
                     <td className="p-4">
                       <div className="flex items-center gap-2">
-                        <button onClick={() => openEditProductModal(p)} className="p-2 bg-neutral-100 rounded-lg text-neutral-600 hover:text-blue-600 transition-colors"><Edit className="w-4 h-4" /></button>
-                        <button onClick={() => removeProduct(p.id)} className="p-2 bg-neutral-100 rounded-lg text-neutral-600 hover:text-red-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                        <button onClick={() => openEditCategoryModal(c)} className="p-2 bg-neutral-100 rounded-lg text-neutral-600 hover:text-blue-600 transition-colors"><Edit className="w-4 h-4" /></button>
+                        <button onClick={() => removeCategory(c.id)} className="p-2 bg-neutral-100 rounded-lg text-neutral-600 hover:text-red-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
                       </div>
                     </td>
                   </tr>
-                )
-              })}
-              {filteredProducts.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="p-8 text-center text-neutral-500">
-                    Nenhum produto encontrado.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                ))}
+                {categories.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="p-8 text-center text-neutral-500">
+                      Nenhuma categoria configurada.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Modal Categoria */}
       {showCategoryModal && (
@@ -571,7 +655,7 @@ function ProductsTab() {
              <button onClick={() => setShowCategoryModal(false)} className="absolute top-4 right-4 p-2 text-neutral-400 hover:bg-neutral-100 rounded-full transition-colors">
                <X className="w-5 h-5"/>
              </button>
-             <h3 className="text-xl font-black text-neutral-900 mb-6">Nova Categoria</h3>
+             <h3 className="text-xl font-black text-neutral-900 mb-6">{editingCategoryId ? 'Editar Categoria' : 'Nova Categoria'}</h3>
              <form onSubmit={handleAddCategory} className="space-y-4">
                 <div>
                   <label className="block text-sm font-bold text-neutral-600 mb-2">Nome da Categoria</label>
