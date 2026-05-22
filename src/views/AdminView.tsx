@@ -282,18 +282,14 @@ function OrdersTab() {
       deliveryText = `🛍️ *Retirada no Local*\n\n`;
     }
 
-    let headerText = '';
-    if (type === 'production') {
-      headerText = `Agora vai! Seu pedido já está *em produção* 🥳`;
+    let message = '';
+    
+    if (type === 'delivery') {
+      message = isDelivery ? 'Seu pedido saiu pra entrega' : 'Seu pedido está pronto para retirada 🛍️';
     } else {
-      if (isDelivery) {
-        headerText = `Oba! Seu pedido *saiu para entrega* 🛵💨`;
-      } else {
-        headerText = `Oba! Seu pedido está *pronto para retirada* 🛍️`;
-      }
+      let headerText = `Agora vai! Seu pedido já está *em produção* 🥳`;
+      message = `${headerText}\nPedido *nº ${order.orderNumber || order.id.slice(0, 4).toUpperCase()}*\n\n*Itens:*\n${itemsText}\n\n${paymentText}\n\n${deliveryText}Total: *R$ ${order.total.toFixed(2).replace('.', ',')}* \n\nObrigado pela preferência, se precisar de algo é só chamar! 😉`;
     }
-
-    const message = `${headerText}\nPedido *nº ${order.orderNumber || order.id.slice(0, 4).toUpperCase()}*\n\n*Itens:*\n${itemsText}\n\n${paymentText}\n\n${deliveryText}Total: *R$ ${order.total.toFixed(2).replace('.', ',')}* \n\nObrigado pela preferência, se precisar de algo é só chamar! 😉`;
 
     const phone = order.phone.replace(/\D/g, ''); // leave only digits
     if (!phone) {
