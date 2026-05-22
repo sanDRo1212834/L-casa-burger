@@ -113,45 +113,65 @@ export function CustomerView() {
             </div>
 
             {/* Product Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {filteredProducts.map(product => (
-                <motion.div
-                  layout
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  key={product.id}
-                  onClick={() => setSelectedProduct(product)}
-                  className="bg-white rounded-2xl overflow-hidden border border-neutral-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-row h-[140px] sm:h-[160px] cursor-pointer"
-                >
-                  <div className="p-4 sm:p-5 flex flex-col flex-grow w-1/2 justify-between">
-                    <div>
-                      <h3 className="font-bold text-base sm:text-lg text-neutral-900 leading-tight">{product.name}</h3>
-                      <p className="text-xs sm:text-sm text-neutral-500 mt-1 line-clamp-2">
-                        {product.description}
-                      </p>
-                    </div>
-                    <div className="mt-2 flex items-center justify-between">
-                      <span className="font-black text-lg sm:text-xl text-neutral-900">
-                        R$ {product.price.toFixed(2).replace('.', ',')}
-                      </span>
+            <div className="space-y-12">
+              {(activeCategory === 'all' && !searchQuery ? categories : [{id: 'filtered', name: 'Resultados'}]).map(group => {
+                const groupProducts = activeCategory === 'all' && !searchQuery 
+                  ? filteredProducts.filter(p => p.categoryId === group.id)
+                  : filteredProducts;
+
+                if (groupProducts.length === 0) return null;
+
+                return (
+                  <div key={group.id}>
+                    {activeCategory === 'all' && !searchQuery && (
+                      <h2 className="text-2xl font-black text-neutral-900 mb-6 flex items-center gap-3">
+                        {group.name}
+                        <span className="text-sm font-bold bg-neutral-100 text-neutral-500 px-3 py-1 rounded-full">{groupProducts.length}</span>
+                      </h2>
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {groupProducts.map(product => (
+                        <motion.div
+                          layout
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          key={product.id}
+                          onClick={() => setSelectedProduct(product)}
+                          className="bg-white rounded-2xl overflow-hidden border border-neutral-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-row h-[140px] sm:h-[160px] cursor-pointer"
+                        >
+                          <div className="p-4 sm:p-5 flex flex-col flex-grow w-1/2 justify-between">
+                            <div>
+                              <h3 className="font-bold text-base sm:text-lg text-neutral-900 leading-tight">{product.name}</h3>
+                              <p className="text-xs sm:text-sm text-neutral-500 mt-1 line-clamp-2">
+                                {product.description}
+                              </p>
+                            </div>
+                            <div className="mt-2 flex items-center justify-between">
+                              <span className="font-black text-lg sm:text-xl text-neutral-900">
+                                R$ {product.price.toFixed(2).replace('.', ',')}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="w-[120px] sm:w-[160px] overflow-hidden relative group flex-shrink-0 h-full">
+                            <img 
+                              src={product.image} 
+                              alt={product.name}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                            />
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); toggleLikeProduct(product.id); }}
+                              className={`absolute top-2 right-2 h-8 ${product.likes ? 'px-3' : 'w-8'} rounded-full bg-white/70 backdrop-blur-md flex items-center justify-center text-neutral-600 hover:text-red-500 transition-colors z-10 gap-1.5`}
+                            >
+                              <Heart className={`w-4 h-4 ${likedProducts.includes(product.id) ? 'fill-red-500 text-red-500' : ''}`} />
+                              {!!product.likes && <span className="text-xs font-bold text-red-600">{product.likes}</span>}
+                            </button>
+                          </div>
+                        </motion.div>
+                      ))}
                     </div>
                   </div>
-                  <div className="w-[120px] sm:w-[160px] overflow-hidden relative group flex-shrink-0 h-full">
-                    <img 
-                      src={product.image} 
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                    />
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); toggleLikeProduct(product.id); }}
-                      className={`absolute top-2 right-2 h-8 ${product.likes ? 'px-3' : 'w-8'} rounded-full bg-white/70 backdrop-blur-md flex items-center justify-center text-neutral-600 hover:text-red-500 transition-colors z-10 gap-1.5`}
-                    >
-                      <Heart className={`w-4 h-4 ${likedProducts.includes(product.id) ? 'fill-red-500 text-red-500' : ''}`} />
-                      {!!product.likes && <span className="text-xs font-bold text-red-600">{product.likes}</span>}
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
+                );
+              })}
             </div>
           </section>
         </>
