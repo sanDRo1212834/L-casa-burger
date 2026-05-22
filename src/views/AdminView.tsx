@@ -157,9 +157,9 @@ function DashboardTab() {
         <StatCard title="Alerta de Estoque" value={`${lowStockCount} Itens`} color="bg-red-50 text-red-600" />
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
         {/* Mock Chart Area */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-neutral-100">
+        <div className="xl:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-neutral-100">
           <h3 className="font-bold text-neutral-900 mb-4">Vendas na Semana (Simulado)</h3>
           <div className="h-64 flex items-end gap-2 justify-between mt-8">
             {[40, 70, 45, 90, 110, 140, 180].map((h, i) => (
@@ -202,6 +202,35 @@ function DashboardTab() {
               <div className="h-full flex flex-col items-center justify-center text-neutral-400">
                 <p className="text-sm font-medium">Nenhum produto</p>
                 <p className="text-xs">Cadastre produtos para ver o ranking</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Promotions Suggestions */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100 flex flex-col">
+          <h3 className="font-bold text-neutral-900 mb-1">Dicas de Promoção</h3>
+          <p className="text-xs text-neutral-500 mb-4 leading-tight">Itens com baixa saída que podem ser impulsionados.</p>
+          <div className="flex-1 overflow-y-auto pr-2 space-y-4">
+            {products.length > 0 ? (
+              [...products]
+                .sort((a, b) => a.sales - b.sales)
+                .slice(0, 5) // Show bottom 5
+                .map((product) => (
+                  <div key={product.id} className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-neutral-100 overflow-hidden shrink-0">
+                      <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm text-neutral-900 truncate">{product.name}</p>
+                      <p className="text-xs text-rose-500 font-bold">{product.sales} {product.sales === 1 ? 'venda' : 'vendas'}</p>
+                    </div>
+                  </div>
+                ))
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-neutral-400">
+                <p className="text-sm font-medium">Nenhum produto</p>
+                <p className="text-xs">Cadastre produtos para ver sugestões</p>
               </div>
             )}
           </div>
