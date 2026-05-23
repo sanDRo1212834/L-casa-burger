@@ -2,7 +2,7 @@ export type Extra = {
   id: string;
   name: string;
   price: number;
-  type?: 'extra' | 'combo';
+  type?: "extra" | "combo";
 };
 
 export type Category = {
@@ -47,9 +47,14 @@ export type Address = {
   complement?: string;
 };
 
-export type PaymentMethod = 'pix' | 'money' | 'card_machine';
-export type DeliveryType = 'delivery' | 'pickup';
-export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'delivered' | 'cancelled';
+export type PaymentMethod = "pix" | "money" | "card_machine";
+export type DeliveryType = "delivery" | "pickup";
+export type OrderStatus =
+  | "pending"
+  | "preparing"
+  | "ready"
+  | "delivered"
+  | "cancelled";
 
 export type Order = {
   id: string;
@@ -64,6 +69,7 @@ export type Order = {
   address?: Address;
   paymentMethod: PaymentMethod;
   changeFor?: number; // Troco para quanto
+  pixReceipt?: string;
 };
 
 export type Customer = {
@@ -83,6 +89,6 @@ export type Employee = {
 export type TableReport = {
   id: string;
   tableNumber: number;
-  status: 'free' | 'occupied' | 'closing';
+  status: "free" | "occupied" | "closing";
   currentTotal: number;
 };
