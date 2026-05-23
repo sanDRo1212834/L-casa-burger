@@ -30,7 +30,6 @@ import {
 import { fetchAddressByCep } from "../context/utils/cep";
 import { Product, Address, DeliveryType, PaymentMethod } from "../types";
 import { ProductModal } from "../components/ProductModal";
-import { CustomerTrackingView } from "./CustomerTrackingView";
 
 const formatPrice = (price: number) => {
   return price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -54,7 +53,6 @@ export function CustomerView() {
     "home",
   );
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [trackingOrder, setTrackingOrder] = useState<string | null>(null);
 
   const getStatusLabel = (status: string) => {
     switch (status) {
@@ -331,15 +329,6 @@ export function CustomerView() {
                         <span className="font-black text-xl text-neutral-900">
                           {formatPrice(order.total)}
                         </span>
-                        {order.status === "ready" &&
-                          order.deliveryType === "delivery" && (
-                            <button
-                              onClick={() => setTrackingOrder(order.id)}
-                              className="mt-3 px-4 py-2 bg-neutral-900 text-white text-sm font-bold rounded-full hover:bg-neutral-800 transition-colors flex items-center gap-2"
-                            >
-                              <MapPin className="w-4 h-4" /> Acompanhar Entrega
-                            </button>
-                          )}
                       </div>
                     </div>
 
@@ -454,27 +443,7 @@ export function CustomerView() {
             Promoções Ativas
           </h2>
 
-          <div className="bg-gradient-to-r from-red-600 to-red-500 rounded-3xl p-8 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden group">
-            <div className="absolute -right-8 -top-8 w-48 h-48 bg-white/20 rounded-full blur-3xl group-hover:bg-white/30 transition-colors" />
-            <div className="relative z-10 flex-1">
-              <span className="bg-yellow-400 text-black px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-4 inline-block">
-                10% OFF
-              </span>
-              <h3 className="font-black text-3xl mb-2 italic">Boas Vindas!</h3>
-              <p className="text-red-100 font-medium">
-                Use o código abaixo no fechamento do seu primeiro pedido para
-                ganhar 10% de desconto.
-              </p>
-            </div>
-            <div className="relative z-10 bg-white/10 p-5 rounded-2xl backdrop-blur-sm border border-white/20 text-center min-w-[200px]">
-              <span className="font-mono text-xl font-bold tracking-widest text-yellow-400 block mb-2">
-                BEMVINDO10
-              </span>
-              <button className="w-full bg-white text-red-600 font-bold px-4 py-2 rounded-xl text-sm hover:bg-neutral-100 w-full transition-colors">
-                Copiar Cupom
-              </button>
-            </div>
-          </div>
+          {/* Removed promo block */}
 
           <div className="bg-gradient-to-r from-teal-600 to-teal-500 rounded-3xl p-8 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden group">
             <div className="absolute -right-8 -top-8 w-48 h-48 bg-white/20 rounded-full blur-3xl group-hover:bg-white/30 transition-colors" />
@@ -515,10 +484,6 @@ export function CustomerView() {
         )}
       </AnimatePresence>
 
-      {/* Tracking Overlay */}
-      {trackingOrder && (
-        <CustomerTrackingView onClose={() => setTrackingOrder(null)} />
-      )}
     </div>
   );
 }
@@ -651,21 +616,6 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("pix");
   const [changeFor, setChangeFor] = useState("");
-  const [pixReceipt, setPixReceipt] = useState<string>("");
-  const [pixVerifying, setPixVerifying] = useState(false);
-  const [pixError, setPixError] = useState("");
-
-  const handlePixUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPixReceipt(reader.result as string);
-        setPixError("");
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handleCepLookup = async () => {
     if (cep.length < 8) return;
@@ -687,41 +637,7 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
   const [submittedOrder, setSubmittedOrder] = useState<any>(null);
 
   const handleFinishOrder = async () => {
-    if (paymentMethod === "pix" && !pixReceipt) {
-      setPixError("Por favor envie o comprovante do PIX.");
-      return;
-    }
-
     let status = "pending";
-
-    if (paymentMethod === "pix") {
-      setPixVerifying(true);
-      setPixError("");
-      try {
-        const response = await fetch("/api/verify-pix", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            image: pixReceipt,
-            expectedAmount: cartTotal,
-          }),
-        });
-        const data = await response.json();
-        setPixVerifying(false);
-        if (response.ok && data.valid) {
-          status = "preparing"; // Auto agree because amount is correct
-        } else {
-          setPixError(
-            data.message || "Comprovante inválido ou valor incorreto.",
-          );
-          return;
-        }
-      } catch (err: any) {
-        setPixVerifying(false);
-        setPixError("Erro na verificação do PIX: " + err.message);
-        return;
-      }
-    }
 
     const newOrder = await submitOrder({
       customerName,
@@ -739,7 +655,6 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
         paymentMethod === "money" && changeFor
           ? parseFloat(changeFor)
           : undefined,
-      pixReceipt,
     });
     setSubmittedOrder(newOrder);
     setStep("success");
@@ -752,7 +667,6 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
       if (!street || !neighborhood || !number) return false;
     }
     if (paymentMethod === "money" && !changeFor) return false;
-    if (paymentMethod === "pix" && !pixReceipt) return false;
     return true;
   };
 
@@ -1083,44 +997,8 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
                         98984676536
                       </p>
                       <p className="text-sm text-teal-800 mb-4">
-                        Por favor envie o comprovante do pix!
+                        Realize o pagamento e confirme o pedido!
                       </p>
-                    </div>
-                    <div>
-                      {pixReceipt ? (
-                        <div className="relative rounded-lg overflow-hidden border-2 border-teal-500 max-h-48 group">
-                          <img
-                            src={pixReceipt}
-                            alt="Comprovante"
-                            className="w-full h-full object-contain bg-white"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setPixReceipt("")}
-                            className="absolute top-2 right-2 p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
-                          >
-                            <X className="w-5 h-5" />
-                          </button>
-                        </div>
-                      ) : (
-                        <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-teal-400 rounded-xl bg-white cursor-pointer hover:bg-teal-50 transition-colors">
-                          <Camera className="w-6 h-6 text-teal-600 mb-2" />
-                          <span className="text-sm font-bold text-teal-700 text-center px-4">
-                            Tirar foto ou anexar comprovante
-                          </span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={handlePixUpload}
-                          />
-                        </label>
-                      )}
-                      {pixError && (
-                        <p className="text-red-500 text-sm font-bold mt-2">
-                          {pixError}
-                        </p>
-                      )}
                     </div>
                   </motion.div>
                 )}
@@ -1216,17 +1094,10 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
             ) : (
               <button
                 onClick={handleFinishOrder}
-                disabled={!isCheckoutValid() || pixVerifying}
+                disabled={!isCheckoutValid()}
                 className="w-full py-4 rounded-full font-bold text-lg bg-yellow-400 hover:bg-yellow-500 text-black shadow-xl shadow-yellow-400/20 transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:bg-neutral-300 disabled:shadow-none"
               >
-                {pixVerifying ? (
-                  <>
-                    <Loader2 className="w-6 h-6 animate-spin text-neutral-600" />
-                    <span>Verificando PIX...</span>
-                  </>
-                ) : (
-                  "Confirmar Pedido"
-                )}
+                Confirmar Pedido
               </button>
             )}
           </div>

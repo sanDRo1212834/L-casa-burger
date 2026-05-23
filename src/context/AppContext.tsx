@@ -27,8 +27,8 @@ const isSupabaseConfigured = () => {
 };
 
 type AppState = {
-  view: "customer" | "admin" | "login" | "courier";
-  setView: (view: "customer" | "admin" | "login" | "courier") => void;
+  view: "customer" | "admin" | "login";
+  setView: (view: "customer" | "admin" | "login") => void;
 
   categories: Category[];
   products: Product[];
@@ -86,7 +86,7 @@ export const ADMIN_EMAILS = ["lucycosta308@gmail.com"];
 const AppContext = createContext<AppState | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [view, setView] = useState<"customer" | "admin" | "login" | "courier">(
+  const [view, setView] = useState<"customer" | "admin" | "login">(
     "customer",
   );
   const [user, setUser] = useState<any>(null);

@@ -91,12 +91,6 @@ export function Header() {
                           >
                             Área do Admin
                           </button>
-                          <button
-                            onClick={() => setView("courier")}
-                            className="text-sm font-bold text-orange-400 hover:text-orange-300 transition-colors"
-                          >
-                            Entregador
-                          </button>
                         </>
                       )}
                       {!user && (
@@ -162,7 +156,7 @@ export function Header() {
                   </>
                 )}
               </>
-            ) : view === "admin" || view === "courier" || view === "login" ? (
+            ) : view === "admin" || view === "login" ? (
               <button
                 onClick={() => setView("customer")}
                 className="flex items-center gap-2 text-sm font-medium bg-neutral-800 hover:bg-neutral-700 px-4 py-2 rounded-full transition-colors"
