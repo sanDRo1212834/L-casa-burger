@@ -65,7 +65,7 @@ export function LoginView() {
         setLoading(false);
 
         if (error) {
-          if (error.message === 'Failed to fetch') {
+          if (error.message?.includes('fetch') || error.message?.includes('Network')) {
             handleLocalLogin();
           } else {
             setErrorMsg(error.message);
@@ -73,7 +73,7 @@ export function LoginView() {
         }
       } catch (err: any) {
         setLoading(false);
-        if (err?.message === 'Failed to fetch') {
+        if (err?.message?.includes('fetch') || err?.message?.includes('Network')) {
           handleLocalLogin();
         } else {
           setErrorMsg(err?.message || 'Erro desconhecido');
@@ -124,14 +124,14 @@ export function LoginView() {
         }
       });
       if (error) {
-        if (error.message === 'Failed to fetch') {
+        if (error.message?.includes('fetch') || error.message?.includes('Network')) {
           setErrorMsg('Erro de conexão com o servidor. Verifique sua internet ou tente login manual.');
         } else {
           setErrorMsg(error.message);
         }
       }
     } catch (e: any) {
-      if (e?.message === 'Failed to fetch') {
+      if (e?.message?.includes('fetch') || e?.message?.includes('Network')) {
         setErrorMsg('Erro de conexão com o servidor. Verifique sua internet ou tente login manual.');
       } else {
         setErrorMsg(e?.message || 'Erro desconhecido');

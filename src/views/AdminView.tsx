@@ -338,6 +338,38 @@ function OrdersTab() {
                    return `${i.quantity}x ${i.product.name}${extDesc}`;
                  }).join(' | ')}
                </p>
+               
+               {/* Informações de Pagamento e Entrega */}
+               <div className="mt-3 flex flex-col gap-1 text-sm bg-neutral-50 p-3 rounded-xl border border-neutral-100">
+                 <div className="flex gap-2 items-center">
+                   <span className="font-bold text-neutral-700">Pagamento:</span>
+                   <span className="text-neutral-600">
+                     {order.paymentMethod === 'pix' ? 'PIX' : order.paymentMethod === 'card_machine' ? 'Máquina de Cartão' : 'Dinheiro'}
+                     {order.paymentMethod === 'money' && order.changeFor ? ` (Troco para R$ ${order.changeFor.toFixed(2).replace('.', ',')})` : ''}
+                   </span>
+                 </div>
+                 
+                 <div className="flex gap-2 items-start">
+                   <span className="font-bold text-neutral-700">Modo:</span>
+                   <span className="text-neutral-600">
+                     {order.deliveryType === 'delivery' ? 'Delivery' : 'Retirada no Local'}
+                   </span>
+                 </div>
+
+                 {order.deliveryType === 'delivery' && order.address && (
+                   <div className="flex gap-2 items-start text-neutral-600">
+                     <span className="font-bold text-neutral-700">Endereço:</span>
+                     <span>
+                       {order.address.street}, {order.address.number}
+                       {order.address.complement && ` - ${order.address.complement}`}
+                       <br />
+                       {order.address.neighborhood}, {order.address.city} - {order.address.state}
+                       <br />
+                       CEP: {order.address.cep}
+                     </span>
+                   </div>
+                 )}
+               </div>
              </div>
              
              <div className="flex flex-col md:items-end gap-2 w-full md:w-auto">

@@ -6,14 +6,23 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-  httpOptions: {
-    headers: {
-      "User-Agent": "aistudio-build",
-    },
-  },
-});
+let aiClient: GoogleGenAI | null = null;
+function getAIClient() {
+  if (!aiClient) {
+    if (!process.env.GEMINI_API_KEY) {
+      throw new Error("GEMINI_API_KEY environment variable is required");
+    }
+    aiClient = new GoogleGenAI({
+      apiKey: process.env.GEMINI_API_KEY,
+      httpOptions: {
+        headers: {
+          "User-Agent": "aistudio-build",
+        },
+      },
+    });
+  }
+  return aiClient;
+}
 
 async function startServer() {
   const app = express();
@@ -35,6 +44,7 @@ async function startServer() {
       // Remove the prefix if it's there (e.g. data:image/png;base64,)
       const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
 
+      const ai = getAIClient();
       const response = await ai.models.generateContent({
         model: "gemini-3.5-flash",
         contents: {
