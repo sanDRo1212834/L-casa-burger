@@ -374,9 +374,16 @@ function OrdersTab() {
                    <div className="flex items-center gap-2 mt-2 border-t border-neutral-200 pt-2 text-neutral-600">
                      <span className="font-bold text-neutral-700">Frete:</span>
                      {order.status === 'pending' || order.status === 'preparing' ? (
-                       <div className="flex gap-2">
-                          <button onClick={() => updateOrderStatus(order.id, order.status, 4)} className={`px-2 py-1 rounded text-xs font-bold transition-colors ${order.deliveryFee === 4 ? 'bg-teal-600 text-white' : 'bg-neutral-200 text-neutral-600 hover:bg-neutral-300'}`}>R$ 4,00</button>
-                          <button onClick={() => updateOrderStatus(order.id, order.status, 6)} className={`px-2 py-1 rounded text-xs font-bold transition-colors ${order.deliveryFee === 6 ? 'bg-teal-600 text-white' : 'bg-neutral-200 text-neutral-600 hover:bg-neutral-300'}`}>R$ 6,00</button>
+                       <div className="flex flex-wrap gap-1">
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(fee => (
+                            <button 
+                              key={fee}
+                              onClick={() => updateOrderStatus(order.id, order.status, fee)} 
+                              className={`px-2 py-1 rounded text-xs font-bold transition-colors ${order.deliveryFee === fee ? 'bg-teal-600 text-white' : 'bg-neutral-200 text-neutral-600 hover:bg-neutral-300'}`}
+                            >
+                              R$ {fee},00
+                            </button>
+                          ))}
                        </div>
                      ) : (
                        <span className="font-bold text-neutral-800">
