@@ -99,7 +99,7 @@ export function CustomerTrackingView({ onClose }: { onClose: () => void }) {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-white flex flex-col relative overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-white flex flex-col overflow-hidden">
       {/* Header back button */}
       <button
         onClick={onClose}
