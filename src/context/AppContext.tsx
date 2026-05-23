@@ -45,7 +45,7 @@ type AppState = {
   addCategory: (category: Category) => void;
   updateCategory: (category: Category) => void;
   removeCategory: (id: string) => void;
-  updateOrderStatus: (orderId: string, status: Order["status"]) => void;
+  updateOrderStatus: (orderId: string, status: Order["status"], deliveryFee?: number) => void;
 
   // Cart Actions
   isCartOpen: boolean;
@@ -310,6 +310,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               paymentMethod: o.payment_method,
               deliveryType:
                 o.delivery_type || (o.address ? "delivery" : "pickup"),
+              deliveryFee: o.delivery_fee,
             })),
           );
         } else if (ords) {
@@ -535,13 +536,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const updateOrderStatus = async (
     orderId: string,
     status: Order["status"],
+    deliveryFee?: number
   ) => {
     setOrders((prev) =>
-      prev.map((o) => (o.id === orderId ? { ...o, status } : o)),
+      prev.map((o) => (o.id === orderId ? { ...o, status, deliveryFee: deliveryFee !== undefined ? deliveryFee : o.deliveryFee } : o)),
     );
     if (isSupabaseConfigured()) {
       try {
-        await supabase.from("orders").update({ status }).eq("id", orderId);
+        const updatePayload: any = { status };
+        if (deliveryFee !== undefined) {
+          updatePayload.delivery_fee = deliveryFee;
+        }
+        await supabase.from("orders").update(updatePayload).eq("id", orderId);
       } catch (err) {}
     }
   };

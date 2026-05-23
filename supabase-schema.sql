@@ -35,12 +35,14 @@ CREATE TABLE public.orders (
     payment_method TEXT,
     change_for NUMERIC,
     delivery_type TEXT,
+    delivery_fee NUMERIC,
     address JSONB,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
 -- If you already have the orders table, run this instead:
 -- ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS delivery_type TEXT;
+-- ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS delivery_fee NUMERIC;
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;

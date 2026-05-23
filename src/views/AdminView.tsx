@@ -277,7 +277,7 @@ function OrdersTab() {
     let deliveryText = '';
     if (isDelivery && order.address) {
       const a = order.address;
-      deliveryText = `🛵 *Delivery* (taxa de: *R$ 3,00*)\n🏠 ${a.street}, Nº ${a.number}${a.complement ? ' - ' + a.complement : ''}, ${a.neighborhood}, ${a.city}\n(Estimativa: *entre 40~60 minutos*)\n\n`;
+      deliveryText = `🛵 *Delivery* (taxa de: *R$ ${order.deliveryFee ? order.deliveryFee.toFixed(2).replace('.',',') : 'A Combinar'}*)\n🏠 ${a.street}, Nº ${a.number}${a.complement ? ' - ' + a.complement : ''}, ${a.neighborhood}, ${a.city}\n(Estimativa: *entre 40~60 minutos*)\n\n`;
     } else {
       deliveryText = `🛍️ *Retirada no Local*\n\n`;
     }
@@ -369,11 +369,27 @@ function OrdersTab() {
                      </span>
                    </div>
                  )}
+
+                 {order.deliveryType === 'delivery' && (
+                   <div className="flex items-center gap-2 mt-2 border-t border-neutral-200 pt-2 text-neutral-600">
+                     <span className="font-bold text-neutral-700">Frete:</span>
+                     {order.status === 'pending' || order.status === 'preparing' ? (
+                       <div className="flex gap-2">
+                          <button onClick={() => updateOrderStatus(order.id, order.status, 4)} className={`px-2 py-1 rounded text-xs font-bold transition-colors ${order.deliveryFee === 4 ? 'bg-teal-600 text-white' : 'bg-neutral-200 text-neutral-600 hover:bg-neutral-300'}`}>R$ 4,00</button>
+                          <button onClick={() => updateOrderStatus(order.id, order.status, 6)} className={`px-2 py-1 rounded text-xs font-bold transition-colors ${order.deliveryFee === 6 ? 'bg-teal-600 text-white' : 'bg-neutral-200 text-neutral-600 hover:bg-neutral-300'}`}>R$ 6,00</button>
+                       </div>
+                     ) : (
+                       <span className="font-bold text-neutral-800">
+                         R$ {order.deliveryFee ? order.deliveryFee.toFixed(2).replace('.', ',') : 'Não definido'}
+                       </span>
+                     )}
+                   </div>
+                 )}
                </div>
              </div>
              
              <div className="flex flex-col md:items-end gap-2 w-full md:w-auto">
-                <span className="font-black text-lg text-neutral-900">R$ {order.total.toFixed(2).replace('.',',')}</span>
+                <span className="font-black text-lg text-neutral-900">R$ {(order.total + (order.deliveryFee || 0)).toFixed(2).replace('.',',')} {order.deliveryFee ? <span className="text-xs text-neutral-500 font-normal ml-1">(com frete)</span> : null}</span>
                 <div className="flex flex-wrap gap-2 justify-end">
                   {order.status === 'pending' && (
                     <button 

@@ -66,6 +66,7 @@ export type Order = {
   total: number;
   status: OrderStatus;
   deliveryType: DeliveryType;
+  deliveryFee?: number;
   address?: Address;
   paymentMethod: PaymentMethod;
   changeFor?: number; // Troco para quanto
