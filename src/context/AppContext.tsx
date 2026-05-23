@@ -376,7 +376,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const submitOrder = async (orderData: Omit<Order, 'id' | 'createdAt'>) => {
     const isSupabaseConfiguredFlag = isSupabaseConfigured();
-    const currentOrderNumber = orders.length + 1;
+    
+    // Calculate daily order number
+    const today = new Date();
+    const todayOrders = orders.filter(o => {
+      const oDate = new Date(o.createdAt);
+      return oDate.getDate() === today.getDate() && oDate.getMonth() === today.getMonth() && oDate.getFullYear() === today.getFullYear();
+    });
+    const currentOrderNumber = todayOrders.length + 1;
+
     let newOrder: Order;
     
     if (isSupabaseConfiguredFlag) {
