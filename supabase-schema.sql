@@ -72,3 +72,18 @@ CREATE POLICY "Enable insert for all users (demo purposes)" ON public.orders FOR
 CREATE POLICY "Enable read access for all users" ON public.orders FOR SELECT USING (true);
 CREATE POLICY "Enable update access for all users" ON public.orders FOR UPDATE USING (true);
 
+CREATE TABLE public.localizacao_entregadores (
+    id TEXT PRIMARY KEY,
+    lat NUMERIC NOT NULL,
+    lng NUMERIC NOT NULL,
+    name TEXT,
+    vehicle TEXT,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.localizacao_entregadores ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Enable all for localizacao_entregadores" ON public.localizacao_entregadores FOR ALL USING (true) WITH CHECK (true);
+
+-- Ativar realtime para a tabela:
+-- ALTER PUBLICATION supabase_realtime ADD TABLE localizacao_entregadores;
+

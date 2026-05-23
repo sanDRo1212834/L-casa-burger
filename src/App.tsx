@@ -4,6 +4,7 @@ import { Header } from './components/Header';
 import { CustomerView } from './views/CustomerView';
 import { AdminView } from './views/AdminView';
 import { LoginView } from './views/LoginView';
+import { CourierView } from './views/CourierView';
 import { PWAPrompt } from './components/PWAPrompt';
 import { Loader2 } from 'lucide-react';
 
@@ -26,6 +27,7 @@ function AppContent() {
         {view === 'customer' && <CustomerView />}
         {view === 'admin' && <AdminView />}
         {view === 'login' && <LoginView />}
+        {view === 'courier' && <CourierView />}
       </main>
     </div>
   );

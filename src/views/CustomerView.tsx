@@ -30,6 +30,7 @@ import {
 import { fetchAddressByCep } from "../context/utils/cep";
 import { Product, Address, DeliveryType, PaymentMethod } from "../types";
 import { ProductModal } from "../components/ProductModal";
+import { CustomerTrackingView } from "./CustomerTrackingView";
 
 const formatPrice = (price: number) => {
   return price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -53,6 +54,7 @@ export function CustomerView() {
     "home",
   );
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [trackingOrder, setTrackingOrder] = useState<string | null>(null);
 
   const getStatusLabel = (status: string) => {
     switch (status) {
@@ -70,7 +72,7 @@ export function CustomerView() {
         };
       case "ready":
         return {
-          label: "Pronto para Retirada",
+          label: "Saiu para Entrega / Disponível",
           bg: "bg-orange-100",
           text: "text-orange-800",
         };
@@ -329,6 +331,15 @@ export function CustomerView() {
                         <span className="font-black text-xl text-neutral-900">
                           {formatPrice(order.total)}
                         </span>
+                        {order.status === "ready" &&
+                          order.deliveryType === "delivery" && (
+                            <button
+                              onClick={() => setTrackingOrder(order.id)}
+                              className="mt-3 px-4 py-2 bg-neutral-900 text-white text-sm font-bold rounded-full hover:bg-neutral-800 transition-colors flex items-center gap-2"
+                            >
+                              <MapPin className="w-4 h-4" /> Acompanhar Entrega
+                            </button>
+                          )}
                       </div>
                     </div>
 
@@ -503,6 +514,11 @@ export function CustomerView() {
           />
         )}
       </AnimatePresence>
+
+      {/* Tracking Overlay */}
+      {trackingOrder && (
+        <CustomerTrackingView onClose={() => setTrackingOrder(null)} />
+      )}
     </div>
   );
 }
