@@ -77,6 +77,8 @@ DROP POLICY IF EXISTS "Enable update access for all users" ON public.orders;
 CREATE POLICY "Enable insert for all users (demo purposes)" ON public.orders FOR INSERT WITH CHECK (true);
 CREATE POLICY "Enable read access for all users" ON public.orders FOR SELECT USING (true);
 CREATE POLICY "Enable update access for all users" ON public.orders FOR UPDATE USING (true);
+CREATE POLICY "Enable delete access for all users" ON public.orders FOR DELETE USING (true);
+
 
 CREATE TABLE public.localizacao_entregadores (
     id TEXT PRIMARY KEY,

@@ -559,7 +559,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setOrders((prev) => prev.filter((o) => o.id !== id));
     if (isSupabaseConfigured()) {
       try {
-        await supabase.from("orders").delete().eq("id", id);
+        const { error } = await supabase.from("orders").delete().eq("id", id);
+        if (error) console.error("Error removing order:", error);
       } catch (err) {
         console.warn("removeOrder sync failed:", err);
       }
