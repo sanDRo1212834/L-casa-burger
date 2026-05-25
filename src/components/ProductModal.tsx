@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Plus, Minus, ChevronDown, ChevronUp } from 'lucide-react';
 import { Product, CartItemExtra, Extra } from '../types';
 import { useAppContext } from '../context/AppContext';
+import { getStoreStatus } from '../utils';
 
 export function ProductModal({ product, onClose }: { product: Product, onClose: () => void }) {
   const { addToCart, categories } = useAppContext();
@@ -12,6 +13,7 @@ export function ProductModal({ product, onClose }: { product: Product, onClose: 
   const [selectedExtras, setSelectedExtras] = useState<CartItemExtra[]>([]);
   const [isExtrasExpanded, setIsExtrasExpanded] = useState(true);
   const [isCombosExpanded, setIsCombosExpanded] = useState(true);
+  const [showClosedModal, setShowClosedModal] = useState(false);
 
   const category = categories.find(c => c.id === product.categoryId);
   const availableExtras = [...(category?.extras || []), ...(product.extras || [])];
@@ -46,9 +48,37 @@ export function ProductModal({ product, onClose }: { product: Product, onClose: 
   const finalPrice = (product.price + extrasTotal) * quantity;
 
   const handleAdd = () => {
+    if (!getStoreStatus().isOpen) {
+      setShowClosedModal(true);
+      return;
+    }
     addToCart(product, quantity, observation, selectedExtras);
     onClose();
   };
+
+  if (showClosedModal) {
+    return (
+      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white p-6 rounded-3xl w-full max-w-sm text-center shadow-2xl border border-neutral-100"
+        >
+          <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <X className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-black text-neutral-900 mb-2">Loja Fechada</h2>
+          <p className="text-neutral-500 mb-6 font-medium">{getStoreStatus().scheduleText}</p>
+          <button 
+            onClick={() => setShowClosedModal(false)} 
+            className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-bold py-4 rounded-xl transition-colors"
+          >
+            Entendi
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm">

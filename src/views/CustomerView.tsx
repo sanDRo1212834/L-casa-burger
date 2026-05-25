@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { fetchAddressByCep } from "../context/utils/cep";
 import { Product, Address, DeliveryType, PaymentMethod } from "../types";
+import { getStoreStatus } from "../utils";
 import { ProductModal } from "../components/ProductModal";
 
 const formatPrice = (price: number) => {
@@ -165,6 +166,17 @@ export function CustomerView() {
 
           {/* Menu Section */}
           <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+            {/* Store Status */}
+            <div className={`mb-8 p-4 rounded-xl flex items-center justify-between ${getStoreStatus().isOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+              <div>
+                <h3 className="font-bold flex items-center gap-2">
+                  <Store className="w-5 h-5" /> 
+                  {getStoreStatus().isOpen ? 'Loja Aberta' : 'Loja Fechada'}
+                </h3>
+                <p className="text-sm mt-1 opacity-90">{getStoreStatus().scheduleText}</p>
+              </div>
+            </div>
+
             {/* Categories */}
             <div className="flex overflow-x-auto gap-2 pb-2 mb-8 hide-scrollbar">
               <button
@@ -635,8 +647,14 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
   };
 
   const [submittedOrder, setSubmittedOrder] = useState<any>(null);
+  const [showClosedModal, setShowClosedModal] = useState(false);
 
   const handleFinishOrder = async () => {
+    if (!getStoreStatus().isOpen) {
+      setShowClosedModal(true);
+      return;
+    }
+
     let status = "pending";
 
     const newOrder = await submitOrder({
@@ -1103,6 +1121,29 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
           </div>
         )}
       </motion.div>
+
+      {/* Closed Modal on Checkout */}
+      {showClosedModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white p-6 rounded-3xl w-full max-w-sm text-center shadow-2xl border border-neutral-100"
+          >
+            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <X className="w-8 h-8" />
+            </div>
+            <h2 className="text-2xl font-black text-neutral-900 mb-2">Loja Fechada</h2>
+            <p className="text-neutral-500 mb-6 font-medium">{getStoreStatus().scheduleText}</p>
+            <button 
+              onClick={() => setShowClosedModal(false)} 
+              className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-bold py-4 rounded-xl transition-colors"
+            >
+              Entendi
+            </button>
+          </motion.div>
+        </div>
+      )}
     </>
   );
 }
