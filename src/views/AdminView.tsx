@@ -252,7 +252,8 @@ function StatCard({ title, value, color }: { title: string, value: string, color
 }
 
 function OrdersTab() {
-  const { orders, updateOrderStatus } = useAppContext();
+  const { orders, updateOrderStatus, clearAllOrders } = useAppContext();
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   
   const sendWhatsApp = (order: Order, type: 'received' | 'production' | 'delivery' = 'received') => {
     const isDelivery = order.deliveryType === 'delivery';
@@ -302,14 +303,47 @@ function OrdersTab() {
     window.open(`https://wa.me/55${phone}?text=${encodedMessage}`, '_blank');
   };
 
-  if(orders.length === 0) return <div className="text-neutral-500">Nenhum pedido recebido ainda.</div>
-
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-black text-neutral-900">Gerenciador de Pedidos</h2>
-      <div className="grid gap-4">
-        {orders.map(order => (
-          <div key={order.id} className="bg-white p-5 rounded-2xl shadow-sm border border-neutral-100 flex flex-col md:flex-row gap-4 items-start md:items-center">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-black text-neutral-900">Gerenciador de Pedidos</h2>
+        {orders.length > 0 && (
+          showClearConfirm ? (
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-red-600">Apagar tudo?</span>
+              <button 
+                onClick={() => {
+                  clearAllOrders();
+                  setShowClearConfirm(false);
+                }} 
+                className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold"
+              >
+                Sim
+              </button>
+              <button 
+                onClick={() => setShowClearConfirm(false)} 
+                className="bg-neutral-200 text-neutral-700 px-3 py-1.5 rounded-lg text-sm font-bold"
+              >
+                Não
+              </button>
+            </div>
+          ) : (
+            <button 
+              onClick={() => setShowClearConfirm(true)} 
+              className="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors"
+            >
+              Limpar Histórico
+            </button>
+          )
+        )}
+      </div>
+      
+      {orders.length === 0 ? (
+        <div className="text-neutral-500">Nenhum pedido recebido ainda.</div>
+      ) : (
+        <div className="grid gap-4">
+          {orders.map(order => (
+            <div key={order.id} className="bg-white p-5 rounded-2xl shadow-sm border border-neutral-100 flex flex-col md:flex-row gap-4 items-start md:items-center">
              <div className="flex-1">
                <div className="flex items-center gap-3 mb-2">
                  <span className="font-mono text-sm font-bold text-neutral-400">#{order.id.slice(0, 4).toUpperCase()}</span>
@@ -439,6 +473,7 @@ function OrdersTab() {
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 }

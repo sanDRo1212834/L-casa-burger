@@ -26,6 +26,7 @@ import {
   Heart,
   User,
   Camera,
+  MessageCircle
 } from "lucide-react";
 import { fetchAddressByCep } from "../context/utils/cep";
 import { Product, Address, DeliveryType, PaymentMethod } from "../types";
@@ -1144,6 +1145,17 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
           </motion.div>
         </div>
       )}
+
+      {/* Floating WhatsApp Support Button */}
+      <a 
+        href={`https://wa.me/559898166341?text=${encodeURIComponent("Oi, boa noite! 😊 Acesse nosso cardápio online aqui: https://la-casa-burger.netlify.app/")}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-40 bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform flex items-center justify-center cursor-pointer hover:bg-[#128C7E]"
+        title="Fale conosco no WhatsApp"
+      >
+        <MessageCircle className="w-8 h-8" />
+      </a>
     </>
   );
 }
