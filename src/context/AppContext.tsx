@@ -46,6 +46,7 @@ type AppState = {
   updateCategory: (category: Category) => void;
   removeCategory: (id: string) => void;
   updateOrderStatus: (orderId: string, status: Order["status"], deliveryFee?: number) => void;
+  removeOrder: (id: string) => void;
   clearAllOrders: () => void;
   clearMyOrders: () => void;
 
@@ -554,11 +555,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const removeOrder = async (id: string) => {
+    setOrders((prev) => prev.filter((o) => o.id !== id));
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.from("orders").delete().eq("id", id);
+      } catch (err) {
+        console.warn("removeOrder sync failed:", err);
+      }
+    }
+  };
+
   const clearAllOrders = async () => {
     setOrders([]);
     if (isSupabaseConfigured()) {
       try {
-        const { error } = await supabase.from("orders").delete().not('id', 'is', null);
+        const { error } = await supabase.from("orders").delete().neq('id', '00000000-0000-0000-0000-000000000000');
         if (error) console.error("Error clearing orders in Supabase:", error);
       } catch (err) {
         console.error("Error clearing orders", err);
@@ -712,6 +724,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         updateCategory,
         removeCategory,
         updateOrderStatus,
+        removeOrder,
         clearAllOrders,
         clearMyOrders,
         toggleLikeProduct,

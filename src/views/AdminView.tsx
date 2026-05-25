@@ -277,7 +277,7 @@ function StatCard({ title, value, color }: { title: string, value: string, color
 }
 
 function OrdersTab() {
-  const { orders, updateOrderStatus, clearAllOrders } = useAppContext();
+  const { orders, updateOrderStatus, removeOrder, clearAllOrders } = useAppContext();
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   
   const sendWhatsApp = (order: Order, type: 'received' | 'production' | 'delivery' = 'received') => {
@@ -493,6 +493,18 @@ function OrdersTab() {
                   {order.status === 'pending' && <button onClick={() => updateOrderStatus(order.id, 'preparing')} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex-1 md:flex-none">Aceitar</button>}
                   {order.status === 'preparing' && <button onClick={() => updateOrderStatus(order.id, 'ready')} className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex-1 md:flex-none">Pronto</button>}
                   {order.status === 'ready' && <button onClick={() => updateOrderStatus(order.id, 'delivered')} className="bg-neutral-800 text-white px-4 py-2 rounded-lg text-sm font-bold flex-1 md:flex-none">Finalizar</button>}
+                  <button 
+                    onClick={() => {
+                        if (confirm("Tem certeza que deseja apagar este pedido do histórico?")) {
+                            removeOrder(order.id);
+                        }
+                    }} 
+                    className="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors shrink-0 flex items-center justify-center flex-1 md:flex-none gap-2 md:gap-0"
+                    title="Apagar pedido"
+                  >
+                    <Trash2 className="w-5 h-5 hidden md:block" />
+                    <span className="md:hidden font-bold text-sm text-red-600">Apagar</span>
+                  </button>
                 </div>
              </div>
           </div>
