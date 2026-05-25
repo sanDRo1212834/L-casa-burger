@@ -779,7 +779,7 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
     if (!customerName || !phone) return false;
     if (phone.length < 10 || phone.length > 11) return false;
     if (deliveryType === "delivery") {
-      if (!street || !neighborhood || !number) return false;
+      if (!cep || !street || !neighborhood || !number) return false;
     }
     if (paymentMethod === "money" && !changeFor) return false;
     return true;
