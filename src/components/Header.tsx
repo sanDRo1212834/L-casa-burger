@@ -15,6 +15,7 @@ import {
   Share2
 } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
+import { getStoreStatus } from "../utils";
 
 export function Header() {
   const {
@@ -47,9 +48,13 @@ export function Header() {
                 className="w-full h-full object-fill bg-black"
               />
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col gap-1">
               <span className="font-extrabold text-xl tracking-wide text-yellow-400 uppercase leading-none">
                 La Casa Burguer
+              </span>
+              <span className={`text-xs font-bold flex items-center gap-1 ${getStoreStatus().isOpen ? 'text-green-400' : 'text-red-400'}`}>
+                <span className={`w-2 h-2 rounded-full ${getStoreStatus().isOpen ? 'bg-green-400' : 'bg-red-400'}`}></span>
+                {getStoreStatus().isOpen ? 'Aberto agora' : 'Fechado'}
               </span>
             </div>
           </div>
