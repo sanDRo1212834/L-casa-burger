@@ -147,6 +147,25 @@ function DashboardTab() {
   const todayRevenue = orders.reduce((sum, o) => sum + o.total, 0);
   const lowStockCount = products.filter(p => p.stock < 20).length;
 
+  // Calculate sales per day of week (0=Sun, 1=Mon, ..., 6=Sat)
+  const salesByDay: Record<number, number> = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+  const ordersCountByDay: Record<number, number> = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+  
+  orders.forEach(o => {
+    const d = new Date(o.createdAt);
+    salesByDay[d.getDay()] += o.total;
+    ordersCountByDay[d.getDay()] += 1;
+  });
+
+  // Reorder for Mon-Sun: [1, 2, 3, 4, 5, 6, 0]
+  const weekDays = [1, 2, 3, 4, 5, 6, 0];
+  const chartData = weekDays.map(day => ({
+    label: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'][weekDays.indexOf(day)],
+    total: salesByDay[day],
+    count: ordersCountByDay[day]
+  }));
+  const maxSale = Math.max(...chartData.map(d => d.total), 1); // avoid /0
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-black text-neutral-900">Visão Geral</h2>
@@ -158,21 +177,27 @@ function DashboardTab() {
       </div>
       
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-        {/* Mock Chart Area */}
-        <div className="xl:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-neutral-100">
-          <h3 className="font-bold text-neutral-900 mb-4">Vendas na Semana (Simulado)</h3>
-          <div className="h-64 flex items-end gap-2 justify-between mt-8">
-            {[40, 70, 45, 90, 110, 140, 180].map((h, i) => (
-              <div key={i} className="w-full max-w-[40px] bg-red-100 rounded-t-md relative group">
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-2 bg-neutral-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                  {h} Vendas
+        {/* Sales Chart Area */}
+        <div className="xl:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-neutral-100 flex flex-col justify-between">
+          <div>
+            <h3 className="font-bold text-neutral-900 mb-1">Histórico de Vendas na Semana</h3>
+            <p className="text-xs text-neutral-500 mb-4">Total em R$ e quantidade de pedidos por dia.</p>
+          </div>
+          <div className="h-56 flex items-end gap-2 justify-between mt-4">
+            {chartData.map((d, i) => (
+              <div key={i} className="w-full max-w-[40px] bg-red-50 rounded-t-lg relative group flex flex-col justify-end h-full">
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-2 bg-neutral-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 flex flex-col items-center shadow-lg pointer-events-none">
+                  <span className="font-bold text-emerald-400">R$ {d.total.toFixed(2)}</span>
+                  <span className="text-neutral-300">{d.count} {d.count === 1 ? 'pedido' : 'pedidos'}</span>
                 </div>
-                <div className="bg-red-600 rounded-t-md transition-all duration-1000 w-full" style={{ height: `${(h/180)*100}%` }}></div>
+                <div className="bg-red-600 rounded-t-lg transition-all duration-1000 w-full relative overflow-hidden group-hover:bg-red-500" style={{ height: `${(d.total/maxSale)*100}%`, minHeight: d.total > 0 ? '4px' : '0' }}>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                </div>
               </div>
             ))}
           </div>
-          <div className="flex justify-between mt-4 text-sm text-neutral-400 font-medium">
-            <span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span><span>Dom</span>
+          <div className="flex justify-between mt-3 text-sm text-neutral-500 font-bold">
+            {chartData.map((d, i) => <span key={i} className="w-full text-center max-w-[40px]">{d.label}</span>)}
           </div>
         </div>
 
@@ -189,12 +214,12 @@ function DashboardTab() {
                     <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center font-bold text-neutral-500 shrink-0">
                       {index + 1}
                     </div>
-                    <div className="w-12 h-12 rounded-xl bg-neutral-100 overflow-hidden shrink-0">
+                    <div className="w-12 h-12 rounded-xl bg-neutral-100 overflow-hidden shrink-0 border border-neutral-200">
                       <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm text-neutral-900 truncate">{product.name}</p>
-                      <p className="text-xs text-neutral-500 font-medium">{product.sales} vendas</p>
+                      <p className="text-xs text-emerald-600 font-bold">{product.sales} vendas</p>
                     </div>
                   </div>
                 ))
@@ -207,28 +232,28 @@ function DashboardTab() {
           </div>
         </div>
 
-        {/* Promotions Suggestions */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100 flex flex-col">
+        {/* Promotions Suggestions - Carousel */}
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100 flex flex-col overflow-hidden">
           <h3 className="font-bold text-neutral-900 mb-1">Dicas de Promoção</h3>
-          <p className="text-xs text-neutral-500 mb-4 leading-tight">Itens com baixa saída que podem ser impulsionados.</p>
-          <div className="flex-1 overflow-y-auto pr-2 space-y-4">
+          <p className="text-xs text-neutral-500 mb-4 leading-tight border-b border-neutral-100 pb-2">Itens com baixa saída que podem ser impulsionados.</p>
+          <div className="flex-1 flex items-center relative">
             {products.length > 0 ? (
-              [...products]
-                .sort((a, b) => a.sales - b.sales)
-                .slice(0, 5) // Show bottom 5
-                .map((product) => (
-                  <div key={product.id} className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-neutral-100 overflow-hidden shrink-0">
-                      <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+              <div className="flex overflow-x-auto gap-4 snap-x pb-4 pt-2 hide-scrollbar w-full">
+                {[...products]
+                  .sort((a, b) => a.sales - b.sales)
+                  .slice(0, 5) // Show bottom 5
+                  .map((product) => (
+                    <div key={product.id} className="snap-start shrink-0 w-[140px] bg-neutral-50 rounded-xl p-3 border border-neutral-100 flex flex-col items-center text-center shadow-sm relative overflow-hidden group">
+                      <div className="w-20 h-20 rounded-full bg-white overflow-hidden mb-3 shadow-inner border-2 border-white">
+                        <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                      </div>
+                      <p className="font-bold text-sm text-neutral-900 line-clamp-2 leading-tight mb-1">{product.name}</p>
+                      <p className="text-xs font-black text-rose-500 mt-auto bg-rose-50 px-2 py-1 rounded w-full">{product.sales} {product.sales === 1 ? 'venda' : 'vendas'}</p>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm text-neutral-900 truncate">{product.name}</p>
-                      <p className="text-xs text-rose-500 font-bold">{product.sales} {product.sales === 1 ? 'venda' : 'vendas'}</p>
-                    </div>
-                  </div>
-                ))
+                  ))}
+              </div>
             ) : (
-              <div className="h-full flex flex-col items-center justify-center text-neutral-400">
+              <div className="w-full h-full flex flex-col items-center justify-center text-neutral-400 min-h-[150px]">
                 <p className="text-sm font-medium">Nenhum produto</p>
                 <p className="text-xs">Cadastre produtos para ver sugestões</p>
               </div>
