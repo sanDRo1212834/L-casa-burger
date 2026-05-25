@@ -5,7 +5,7 @@ export const getStoreStatus = () => {
     const time = brtDate.getHours() * 60 + brtDate.getMinutes();
 
     let isOpen = false;
-    let scheduleText = "Segunda a Sexta: 18:00 às 23:10\nSábado e Domingo: 18:00 às 23:40";
+    let scheduleText = "Segunda-feira : 18:00 até 23:10\nTerça-feira : 18:00 até 23:10\nQuarta-feira 18:00 até 23:10\nQuinta-feira 18:00 até 23:10\nSexta-feira 18:00 até 23:10\nSábado 18:00 até 23:40\nDomingo 18:00 até 23:40";
 
     let nextOpenText = "abre hoje às 18h";
 

@@ -1,38 +1,40 @@
-# La Casa Burger | Sistema de Gestão e Pedidos
+# La Casa Burguer | Sistema de Gestão e Pedidos
 
 ## Sobre o Sistema
-Este é um sistema completo e moderno para gestão de pedidos e cardápio, desenvolvido para otimizar as operações do **La Casa Burger**. O projeto contempla uma frente de loja (interface do cliente) para realização de pedidos via "Delivery" ou "Retirada", e um painel de administração blindado para a equipe do restaurante acompanhar o faturamento, produção, e catálogo.
+Este é um sistema completo e moderno para gestão de pedidos e cardápio, desenvolvido para otimizar as operações do **La Casa Burguer**. O projeto contempla uma frente de loja (interface do cliente) para realização de pedidos via "Delivery" ou "Retirada", e um painel de administração blindado para a equipe do restaurante acompanhar o faturamento, controle de produção e gerenciar o catálogo.
 
 **Principais Funcionalidades:**
-- **PWA (Progressive Web App)**: Instalável em Android, iOS e Windows direto pelo navegador com prompt personalizado e experiência nativa. Suporta atualizações transparentes.
-- **Integração com WhatsApp**: Na finalização de pedidos, mensagens estilizadas são geradas automaticamente para facilitar o fluxo de atendimento. O Admin possui botões de WhatsApp de 1-click para alertar a preparação, entrega, e retirada.
-- **Consulta de CEP Automática**: Integração com a API do ViaCEP para autocompletar endereços no momento do Checkout.
-- **Painel Administrativo**: Protegido por sistema de login moderno. Contempla Dashboard financeiro, gestor de Categorias e Produtos (com suporte a upload de imagens), Gestor de Mesas (QR Code) e acompanhamento em Real-Time dos status dos pedidos (Pendente, Preparo, Pronto e Entregue).
-- **Integração Real-Time**: O Supabase fornece a flexibilidade e sincronização na comunicação em tempo real e armazena os dados do cliente de forma persistente.
-- **Deploy Otimizado e Contínuo**: Configurações flexíveis preparadas apontadas para o Netlify com hooks de deploy via Github.
+- **Frente de Loja (PWA - Progressive Web App)**: Instalável em aparelhos Android, iOS e Desktop diretamente pelo navegador, assegurando uma experiência fluida de aplicativo nativo off-line e com atualizações em background.
+- **Integração com WhatsApp**: Geração automática de mensagens estilizadas ao finalizar pedidos para facilitar o fluxo de atendimento da lanchonete, incluindo alertas de suporte e direcionamento no cardápio de 1-click.
+- **Verificação Inteligente de Comprovante PIX (via IA)**: O back-end incorpora inteligência artificial utilizando modelos visuais do **Google Gemini (3.5 Flash)** para escanear, processar a imagem (OCR e Análise) do recibo PIX e validar se o valor confere exatamente com a cobrança final. 
+- **Consulta de CEP Automática (ViaCEP)**: Formulários de delivery auto-completados a partir do CEP inserido pelo conforto do cliente.
+- **Painel Administrativo e Real-Time**: Interface do dono para analisar vendas, gerenciar mesas, editar e subir novos produtos no cardápio. Possibilita mudar o status do pedido para "Preparo" e "Entregue" - sendo sincronizado na nuvem.
+- **Design de Alta Qualidade**: Estilizado primariamente pensando na experiência Mobile, trazendo micro-interações responsivas, paletas de cores modernas, drawers fluídos e componentes que incentivam usabilidade elegante (mobile-first UI).
 
 ## Tecnologias Usadas
 
-O sistema foi estruturado adotando o melhor do ecossistema Web moderno:
+Este software Full-stack une o máximo de usabilidade moderna e integração de inteligência artificial de ponta:
 
 - **Frontend**: 
-  - **React 18** com **TypeScript** e build orquestrado através do **Vite**.
-  - **Tailwind CSS**: Estilização baseada em utilitários providenciando responsividade nativa, garantindo visualização otimizada para Desktop, Tablets e dispositivos Mobile (Mobile-first).
-  - **Motion (Framer Motion)**: Biblioteca responsável pelas microinterações (como a animação de "Pedido Sucesso", menus de navegação, progressbar do PWA e modais).
-  - **Lucide-React**: Coleção flexível de ícones no padrão visual.
+  - **React 19** com forte tipagem de **TypeScript**, orquestrado pelo compilador ágil **Vite**.
+  - **Tailwind CSS (v4)**: Framework de estilização via utilitários focado em interfaces escaláveis, fluidas e com alta responsividade sem arquivos de CSS gigantes.
+  - **Motion (Framer)**: Framework declarativo responsável por todas as animações robustas (carrinho/sacola flutuante, notificações coloridas, entradas de modais, fade-ins).
+  - **Lucide-React**: Set premium, customizável e adaptativo de ícones limpos no padrão UI.
 
-- **Backend & Serviços Online**:
-  - **Supabase**: Backend (BaaS) operando como o coração inteligente do app. Responsável por serviços essenciais de banco de dados baseado em Postgres, Auth, e integração com autenticações de terceiros como Google OAuth.
-  - **ViaCEP**: Utilizado a nível de API para validações e preenchimento de endereços fluído para delivery brasileiro.
+- **Backend, Banco de Dados & Infra IA**:
+  - **Node.js + Express Server**: Custom backend executado em Node (`server.ts`) encarregado de injetar segurança, servir requisições assíncronas do checkout e empacotar a aplicação final.
+  - **Google Gemini API**: Utiliza a mais nova SDK oficial `@google/genai`. Analisa, classifica fotos submetidas nos formulários de confirmação e extrai metadados valiosos operando o motor visionário em nuvem de modo seguro.
+  - **Supabase**: Base de dados Postgres flexível funcionando em formato BaaS (Backend-as-a-service) - fornece Auth protegido por JWT e gerenciamento das tabelas dos menus e dos pedidos feitos através do Front.
 
 - **DevOps, Tooling & Distribuição**:
-  - **Netlify**: Hospedagem robusta para distribuição de aplicações Node.js / Serverless front-ends configurada através de `netlify.toml`.
-  - **vite-plugin-pwa**: Motor responsável por gerar manifestos e workers (Service Workers) que constroem e gerenciam comportamentos de tela inicial (Add to Homescreen) e atualização da plataforma PWA.
+  - **vite-plugin-pwa**: Auxiliar automático e gerador dos manifests WebManifest e do Service Worker. Garante o funcionamento de caixas promts como "Adicionar a Tela Inicial".
+  - **esbuild**: Compilador (escrito em Go) executado durando o build para compilar com velocidade absurda os arquivos TS Node garantindo output puro em `dist/server.cjs`.
 
 ---
 
-## Contato e Suporte
+## Contato e Desenvolvimento
 
-Caso você tenha alguma dúvida a respeito desta infraestrutura ou precise escalar para novas funcionalidades da lanchonete, pode entrar em contato:
+Caso precise gerenciar este sistema de software, re-escalar opções técnicas de banco de dados ou requisitar manutenções pontuais:
 
-📩 **Email para contato técnico e manutenções:** [sousasandro419@gmail.com](mailto:sousasandro419@gmail.com)
+📩 **Email para suporte:** [sousasandro419@gmail.com](mailto:sousasandro419@gmail.com)
+(Sandro Dev)
