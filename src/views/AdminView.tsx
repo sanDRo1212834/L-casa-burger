@@ -369,21 +369,34 @@ function OrdersTab() {
         <div className="grid gap-4">
           {orders.map(order => (
             <div key={order.id} className="bg-white p-5 rounded-2xl shadow-sm border border-neutral-100 flex flex-col md:flex-row gap-4 items-start md:items-center">
-             <div className="flex-1">
-               <div className="flex items-center gap-3 mb-2">
-                 <span className="font-mono text-sm font-bold text-neutral-400">#{order.id.slice(0, 4).toUpperCase()}</span>
-                 <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase
-                   ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : ''}
-                   ${order.status === 'preparing' ? 'bg-blue-100 text-blue-700' : ''}
-                   ${order.status === 'ready' ? 'bg-emerald-100 text-emerald-700' : ''}
-                   ${order.status === 'delivered' ? 'bg-neutral-100 text-neutral-500' : ''}
-                 `}>
-                   {order.status === 'pending' ? 'Pendente' : order.status === 'preparing' ? 'Preparo' : order.status === 'ready' ? 'Pronto' : 'Entregue'}
-                 </span>
-                 <span className="px-2 py-0.5 rounded bg-neutral-100 text-neutral-600 text-xs font-bold uppercase flex items-center gap-1">
-                   {order.deliveryType === 'delivery' ? <PackageSearch className="w-3 h-3" /> : <Coffee className="w-3 h-3"/>}
-                   {order.deliveryType === 'delivery' ? 'Entrega' : 'Retirada'}
-                 </span>
+             <div className="flex-1 w-full">
+               <div className="flex justify-between items-start mb-2">
+                 <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                   <span className="font-mono text-sm font-bold text-neutral-400">#{order.id.slice(0, 4).toUpperCase()}</span>
+                   <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase
+                     ${order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : ''}
+                     ${order.status === 'preparing' ? 'bg-blue-100 text-blue-700' : ''}
+                     ${order.status === 'ready' ? 'bg-emerald-100 text-emerald-700' : ''}
+                     ${order.status === 'delivered' ? 'bg-neutral-100 text-neutral-500' : ''}
+                   `}>
+                     {order.status === 'pending' ? 'Pendente' : order.status === 'preparing' ? 'Preparo' : order.status === 'ready' ? 'Pronto' : 'Entregue'}
+                   </span>
+                   <span className="px-2 py-0.5 rounded bg-neutral-100 text-neutral-600 text-xs font-bold uppercase flex items-center gap-1">
+                     {order.deliveryType === 'delivery' ? <PackageSearch className="w-3 h-3" /> : <Coffee className="w-3 h-3"/>}
+                     {order.deliveryType === 'delivery' ? 'Entrega' : 'Retirada'}
+                   </span>
+                 </div>
+                 <button 
+                   onClick={() => {
+                       if (confirm("Tem certeza que deseja apagar este pedido do histórico?")) {
+                           removeOrder(order.id);
+                       }
+                   }} 
+                   className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0 -mt-1 -mr-1"
+                   title="Apagar pedido"
+                 >
+                   <Trash2 className="w-4 h-4" />
+                 </button>
                </div>
                <p className="font-bold text-neutral-900">
                  Pedido #{order.orderNumber || '?'} - {order.customerName} <span className="text-neutral-400 font-normal">({order.phone || 'Sem telefone'})</span>
@@ -493,18 +506,6 @@ function OrdersTab() {
                   {order.status === 'pending' && <button onClick={() => updateOrderStatus(order.id, 'preparing')} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex-1 md:flex-none">Aceitar</button>}
                   {order.status === 'preparing' && <button onClick={() => updateOrderStatus(order.id, 'ready')} className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex-1 md:flex-none">Pronto</button>}
                   {order.status === 'ready' && <button onClick={() => updateOrderStatus(order.id, 'delivered')} className="bg-neutral-800 text-white px-4 py-2 rounded-lg text-sm font-bold flex-1 md:flex-none">Finalizar</button>}
-                  <button 
-                    onClick={() => {
-                        if (confirm("Tem certeza que deseja apagar este pedido do histórico?")) {
-                            removeOrder(order.id);
-                        }
-                    }} 
-                    className="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors shrink-0 flex items-center justify-center flex-1 md:flex-none gap-2 md:gap-0"
-                    title="Apagar pedido"
-                  >
-                    <Trash2 className="w-5 h-5 hidden md:block" />
-                    <span className="md:hidden font-bold text-sm text-red-600">Apagar</span>
-                  </button>
                 </div>
              </div>
           </div>
