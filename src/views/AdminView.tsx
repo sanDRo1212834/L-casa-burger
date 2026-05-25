@@ -144,34 +144,57 @@ function MobileNavItem({ icon, label, active, onClick }: { icon: React.ReactNode
 function DashboardTab() {
   const { orders, products, customers } = useAppContext();
   
-  const todayRevenue = orders.reduce((sum, o) => sum + o.total, 0);
+  const now = new Date();
+  
+  // Start of today
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  
+  // Start of current week (assuming Monday is the first day of the week)
+  const currentDayOfWeek = now.getDay(); 
+  const distanceToMonday = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1;
+  const startOfWeek = new Date(startOfToday);
+  startOfWeek.setDate(startOfToday.getDate() - distanceToMonday);
+
+  const todayOrders = orders.filter(o => new Date(o.createdAt) >= startOfToday);
+  const todayRevenue = todayOrders.reduce((sum, o) => sum + o.total, 0);
+
   const lowStockCount = products.filter(p => p.stock < 20).length;
 
-  // Calculate sales per day of week (0=Sun, 1=Mon, ..., 6=Sat)
-  const salesByDay: Record<number, number> = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
-  const ordersCountByDay: Record<number, number> = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+  const weeklySalesByDay: Record<number, number> = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+  const weeklyOrdersCountByDay: Record<number, number> = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
   
-  orders.forEach(o => {
+  const thisWeekOrders = orders.filter(o => new Date(o.createdAt) >= startOfWeek);
+  
+  thisWeekOrders.forEach(o => {
     const d = new Date(o.createdAt);
-    salesByDay[d.getDay()] += o.total;
-    ordersCountByDay[d.getDay()] += 1;
+    weeklySalesByDay[d.getDay()] += o.total;
+    weeklyOrdersCountByDay[d.getDay()] += 1;
   });
 
-  // Reorder for Mon-Sun: [1, 2, 3, 4, 5, 6, 0]
   const weekDays = [1, 2, 3, 4, 5, 6, 0];
   const chartData = weekDays.map(day => ({
     label: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'][weekDays.indexOf(day)],
-    total: salesByDay[day],
-    count: ordersCountByDay[day]
+    total: weeklySalesByDay[day],
+    count: weeklyOrdersCountByDay[day]
   }));
   const maxSale = Math.max(...chartData.map(d => d.total), 1); // avoid /0
+
+  let bestDayName = "---";
+  let bestDaySales = 0;
+  chartData.forEach(d => {
+    if (d.total > bestDaySales) {
+      bestDaySales = d.total;
+      bestDayName = d.label;
+    }
+  });
 
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-black text-neutral-900">Visão Geral</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard title="Vendas Hoje" value={`R$ ${todayRevenue.toFixed(2)}`} color="bg-emerald-50 text-emerald-600" />
-        <StatCard title="Pedidos" value={orders.length.toString()} color="bg-blue-50 text-blue-600" />
+        <StatCard title={`Melhor Dia (${bestDayName})`} value={`R$ ${bestDaySales.toFixed(2)}`} color="bg-orange-50 text-orange-600" />
+        <StatCard title="Pedidos (Hoje)" value={todayOrders.length.toString()} color="bg-blue-50 text-blue-600" />
         <StatCard title="Clientes Registrados" value={customers.length.toString()} color="bg-purple-50 text-purple-600" />
         <StatCard title="Alerta de Estoque" value={`${lowStockCount} Itens`} color="bg-red-50 text-red-600" />
       </div>
