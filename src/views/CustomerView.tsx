@@ -49,12 +49,14 @@ export function CustomerView() {
     likedProducts,
     setView,
     myOrders,
+    clearMyOrders,
   } = useAppContext();
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [activeTab, setActiveTab] = useState<"home" | "orders" | "promos">(
     "home",
   );
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const getStatusLabel = (status: string) => {
     switch (status) {
@@ -168,14 +170,20 @@ export function CustomerView() {
           {/* Menu Section */}
           <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
             {/* Store Status */}
-            <div className={`mb-8 p-4 rounded-xl flex items-center justify-between ${getStoreStatus().isOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-              <div>
-                <h3 className="font-bold flex items-center gap-2">
-                  <Store className="w-5 h-5" /> 
-                  {getStoreStatus().isOpen ? 'Loja Aberta' : 'Loja Fechada'}
-                </h3>
-                <p className="text-sm mt-1 opacity-90">{getStoreStatus().scheduleText}</p>
+            <div className="mb-8">
+              <div className="flex items-center justify-between bg-white px-4 py-4 rounded-t-xl sm:rounded-xl">
+                <span className="text-sm font-medium text-neutral-700">
+                  {getStoreStatus().isOpen ? 'Aberto agora' : getStoreStatus().nextOpenText.charAt(0).toUpperCase() + getStoreStatus().nextOpenText.slice(1)} • Sem pedido mínimo
+                </span>
+                <span className="text-sm font-bold text-[#0ea5e9] cursor-pointer">
+                  Perfil da loja
+                </span>
               </div>
+              {!getStoreStatus().isOpen && (
+                <div className="bg-[#FFEFEF] text-[#C43A3A] px-4 py-3 rounded-b-xl sm:rounded-xl sm:mt-2 text-center text-sm font-bold">
+                  Loja fechada, {getStoreStatus().nextOpenText}
+                </div>
+              )}
             </div>
 
             {/* Categories */}
@@ -289,9 +297,40 @@ export function CustomerView() {
 
       {activeTab === "orders" && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 mb-24">
-          <h2 className="text-2xl font-black text-neutral-900 mb-6">
-            Meus Pedidos
-          </h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-black text-neutral-900">
+              Meus Pedidos
+            </h2>
+            {myOrders.length > 0 && (
+              showClearConfirm ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-red-600">Apagar tudo?</span>
+                  <button 
+                    onClick={() => {
+                      clearMyOrders();
+                      setShowClearConfirm(false);
+                    }} 
+                    className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold"
+                  >
+                    Sim
+                  </button>
+                  <button 
+                    onClick={() => setShowClearConfirm(false)} 
+                    className="bg-neutral-200 text-neutral-700 px-3 py-1.5 rounded-lg text-sm font-bold"
+                  >
+                    Não
+                  </button>
+                </div>
+              ) : (
+                <button 
+                  onClick={() => setShowClearConfirm(true)} 
+                  className="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg text-sm font-bold transition-colors"
+                >
+                  Limpar Histórico
+                </button>
+              )
+            )}
+          </div>
 
           {myOrders.length === 0 ? (
             <div className="bg-white p-12 rounded-3xl border border-neutral-100 flex flex-col items-center justify-center text-center shadow-sm">
@@ -1135,7 +1174,7 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
               <X className="w-8 h-8" />
             </div>
             <h2 className="text-2xl font-black text-neutral-900 mb-2">Loja Fechada</h2>
-            <p className="text-neutral-500 mb-6 font-medium">{getStoreStatus().scheduleText}</p>
+            <p className="text-neutral-500 mb-6 font-medium whitespace-pre-line leading-relaxed">{getStoreStatus().scheduleText}</p>
             <button 
               onClick={() => setShowClosedModal(false)} 
               className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-bold py-4 rounded-xl transition-colors"

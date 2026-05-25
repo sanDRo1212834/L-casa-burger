@@ -12,6 +12,7 @@ import {
   Contact2,
   CheckCircle2,
   X,
+  Share2
 } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 
@@ -39,7 +40,7 @@ export function Header() {
             onClick={() => setView("customer")}
           >
             {/* Logo Image */}
-            <div className="relative w-12 h-12 rounded-full overflow-hidden transform group-hover:scale-105 transition-transform shadow-md border-2 border-yellow-400">
+            <div className="relative w-14 h-14 rounded-full overflow-hidden transform group-hover:scale-105 transition-transform shadow-md border-2 border-white/60">
               <img
                 src="/favicon.png"
                 alt="La Casa Burguer Logo"
@@ -47,11 +48,8 @@ export function Header() {
               />
             </div>
             <div className="flex flex-col">
-              <span className="font-black text-xl italic tracking-wide text-yellow-400 uppercase leading-none">
-                La Casa
-              </span>
-              <span className="font-bold text-lg text-white uppercase leading-none">
-                Burguer
+              <span className="font-extrabold text-xl tracking-wide text-yellow-400 uppercase leading-none">
+                La Casa Burguer
               </span>
             </div>
           </div>
@@ -136,15 +134,35 @@ export function Header() {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setIsSearchExpanded(true)}
-                        className="relative w-12 h-12 flex items-center justify-center bg-neutral-800 hover:bg-neutral-700 rounded-full transition-colors group border border-neutral-700"
+                        className="relative w-11 h-11 flex items-center justify-center bg-white/20 hover:bg-white rounded-full transition-colors group border-transparent"
                       >
-                        <Search className="w-5 h-5 text-white" />
+                        <Search className="w-5 h-5 text-white group-hover:text-[#0ea5e9]" />
+                      </button>
+                      <button
+                        onClick={async () => {
+                          const url = 'https://la-casa-burger.netlify.app/';
+                          if (navigator.share) {
+                            try {
+                              await navigator.share({ title: 'La Casa Burguer', url });
+                            } catch (err: any) {
+                              if (err.name !== 'AbortError') {
+                                console.error('Error sharing:', err);
+                              }
+                            }
+                          } else {
+                            navigator.clipboard.writeText(url);
+                            alert('Link copiado para a área de transferência!');
+                          }
+                        }}
+                        className="relative w-11 h-11 flex items-center justify-center bg-white/20 hover:bg-white rounded-full transition-colors group border-transparent"
+                      >
+                        <Share2 className="w-5 h-5 text-white group-hover:text-[#0ea5e9]" />
                       </button>
                       <button
                         onClick={() => setIsCartOpen(true)}
-                        className="relative w-12 h-12 flex items-center justify-center bg-neutral-800 hover:bg-neutral-700 rounded-full transition-colors group border border-neutral-700 sm:flex hidden"
+                        className="relative w-11 h-11 flex items-center justify-center bg-white/20 hover:bg-white rounded-full transition-colors group border-transparent sm:flex hidden"
                       >
-                        <ShoppingCart className="w-5 h-5 text-white" />
+                        <ShoppingCart className="w-5 h-5 text-white group-hover:text-[#0ea5e9]" />
                         {cart.reduce((acc, item) => acc + item.quantity, 0) >
                           0 && (
                           <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">

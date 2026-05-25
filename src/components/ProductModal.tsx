@@ -68,7 +68,7 @@ export function ProductModal({ product, onClose }: { product: Product, onClose: 
             <X className="w-8 h-8" />
           </div>
           <h2 className="text-2xl font-black text-neutral-900 mb-2">Loja Fechada</h2>
-          <p className="text-neutral-500 mb-6 font-medium">{getStoreStatus().scheduleText}</p>
+          <p className="text-neutral-500 mb-6 font-medium whitespace-pre-line leading-relaxed">{getStoreStatus().scheduleText}</p>
           <button 
             onClick={() => setShowClosedModal(false)} 
             className="w-full bg-neutral-900 hover:bg-neutral-800 text-white font-bold py-4 rounded-xl transition-colors"

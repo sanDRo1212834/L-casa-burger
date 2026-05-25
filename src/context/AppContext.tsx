@@ -47,6 +47,7 @@ type AppState = {
   removeCategory: (id: string) => void;
   updateOrderStatus: (orderId: string, status: Order["status"], deliveryFee?: number) => void;
   clearAllOrders: () => void;
+  clearMyOrders: () => void;
 
   // Cart Actions
   isCartOpen: boolean;
@@ -152,7 +153,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             .from("orders")
             .select("*")
             .order("created_at", { ascending: false })
-            .limit(300),
+            .limit(50),
         ]);
 
         if (catRes.error)
@@ -557,11 +558,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setOrders([]);
     if (isSupabaseConfigured()) {
       try {
-        await supabase.from("orders").delete().neq('id', 'placeholder-uuid-that-doesnt-exist');
+        const { error } = await supabase.from("orders").delete().not('id', 'is', null);
+        if (error) console.error("Error clearing orders in Supabase:", error);
       } catch (err) {
         console.error("Error clearing orders", err);
       }
     }
+  };
+
+  const clearMyOrders = () => {
+    setMyOrderIds([]);
   };
 
   const submitOrder = async (orderData: Omit<Order, "id" | "createdAt">) => {
@@ -707,6 +713,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         removeCategory,
         updateOrderStatus,
         clearAllOrders,
+        clearMyOrders,
         toggleLikeProduct,
         likedProducts,
         isCartOpen,

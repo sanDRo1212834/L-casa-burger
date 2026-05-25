@@ -5,13 +5,17 @@ export const getStoreStatus = () => {
     const time = brtDate.getHours() * 60 + brtDate.getMinutes();
 
     let isOpen = false;
-    let scheduleText = "Seg a Sex: 18:00 às 23:00 | Sáb e Dom: 18:00 às 23:30";
+    let scheduleText = "Segunda a Sexta: 18:00 às 23:10\nSábado e Domingo: 18:00 às 23:40";
+
+    let nextOpenText = "abre hoje às 18h";
 
     if (day >= 1 && day <= 5) {
-      if (time >= 18 * 60 && time <= 23 * 60) isOpen = true;
-    } else {
-      if (time >= 18 * 60 && time <= 23 * 60 + 30) isOpen = true;
+      // Monday to Friday
+      if (time >= 18 * 60 && time <= 23 * 60 + 10) isOpen = true;
+    } else if (day === 0 || day === 6) {
+      // Saturday and Sunday
+      if (time >= 18 * 60 && time <= 23 * 60 + 40) isOpen = true;
     }
 
-    return { isOpen, scheduleText };
+    return { isOpen, scheduleText, nextOpenText };
 };
