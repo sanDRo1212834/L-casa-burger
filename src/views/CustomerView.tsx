@@ -637,7 +637,7 @@ function CustomerBottomNav({
       <div className="flex justify-around w-full max-w-md mx-auto">
         <BottomNavItem
           icon={<Home />}
-          label="Início"
+          label="Home"
           active={activeTab === "home"}
           onClick={() => setActiveTab("home")}
         />
