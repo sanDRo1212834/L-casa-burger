@@ -992,15 +992,50 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
                   Pagamento na Entrega
                 </h3>
                 
-                <select
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                  className="w-full p-4 rounded-xl border border-neutral-200 focus:border-red-600 focus:ring-1 focus:ring-red-600 outline-none bg-neutral-50 font-bold text-neutral-800"
-                >
-                  <option value="pix">PIX</option>
-                  <option value="card_machine">Cartão</option>
-                  <option value="money">Dinheiro</option>
-                </select>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => setPaymentMethod("pix")}
+                    className={`p-3 rounded-xl border font-bold flex flex-col items-center justify-center gap-1 transition-colors ${paymentMethod === "pix" ? "bg-teal-50 border-teal-500 text-teal-700" : "bg-neutral-50 border-neutral-200 text-neutral-500 hover:bg-neutral-100"}`}
+                  >
+                    <div className="w-6 h-6 text-teal-600">
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16.48 4.29l2.76 2.76a1.48 1.48 0 010 2.1l-6.19 6.19a1.48 1.48 0 01-2.1 0l-6.19-6.19a1.48 1.48 0 010-2.1l2.76-2.76a1.48 1.48 0 012.1 0l2.38 2.38 2.38-2.38a1.48 1.48 0 012.1 0zM7.52 19.71l-2.76-2.76a1.48 1.48 0 010-2.1l6.19-6.19a1.48 1.48 0 012.1 0l6.19 6.19a1.48 1.48 0 010 2.1l-2.76 2.76a1.48 1.48 0 01-2.1 0l-2.38-2.38-2.38 2.38a1.48 1.48 0 01-2.1 0z" />
+                      </svg>
+                    </div>
+                    PIX
+                  </button>
+                  <button
+                    onClick={() => setPaymentMethod("card_machine")}
+                    className={`p-3 rounded-xl border font-bold flex flex-col items-center justify-center gap-1 transition-colors ${paymentMethod === "card_machine" ? "bg-blue-50 border-blue-500 text-blue-700" : "bg-neutral-50 border-neutral-200 text-neutral-500 hover:bg-neutral-100"}`}
+                  >
+                    <CreditCard className="w-6 h-6" />
+                    Cartão
+                  </button>
+                  <button
+                    onClick={() => setPaymentMethod("money")}
+                    className={`p-3 rounded-xl border font-bold flex flex-col items-center justify-center gap-1 transition-colors ${paymentMethod === "money" ? "bg-green-50 border-green-500 text-green-700" : "bg-neutral-50 border-neutral-200 text-neutral-500 hover:bg-neutral-100"}`}
+                  >
+                    <Banknote className="w-6 h-6" />
+                    Dinheiro
+                  </button>
+                </div>
+
+                {paymentMethod === "card_machine" && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-4"
+                  >
+                    <div>
+                      <p className="text-blue-900 font-bold mb-2">
+                        Pagamento com Cartão
+                      </p>
+                      <p className="text-sm text-blue-800 mb-4">
+                        O entregador levará a maquininha de cartão até você!
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
 
                 {paymentMethod === "pix" && (
                   <motion.div
