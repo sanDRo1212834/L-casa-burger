@@ -393,7 +393,7 @@ export function CustomerView() {
                             {order.paymentMethod === "pix"
                               ? "PIX"
                               : order.paymentMethod === "card_machine"
-                                ? "Máquina de Cartão"
+                                ? "Cartão"
                                 : order.paymentMethod === "money"
                                   ? "Dinheiro"
                                   : "Não informado"}
@@ -980,35 +980,6 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
                           />
                         </div>
                       </div>
-
-                      {/* Map */}
-                      {street && city && number && (
-                        <div className="w-full h-32 bg-neutral-200 rounded-xl overflow-hidden relative border border-neutral-300">
-                          <iframe
-                            width="100%"
-                            height="100%"
-                            frameBorder="0"
-                            style={{ border: 0 }}
-                            src={`https://maps.google.com/maps?q=${encodeURIComponent(`${street}, ${number} - ${neighborhood}, ${city} - ${state}`)}&output=embed`}
-                            allowFullScreen
-                          ></iframe>
-                        </div>
-                      )}
-                      {!(street && city && number) && (
-                        <div className="w-full h-32 bg-neutral-200 rounded-xl overflow-hidden relative flex items-center justify-center border border-neutral-300">
-                          <div
-                            className="absolute inset-0 opacity-20"
-                            style={{
-                              backgroundImage:
-                                'url("https://www.transparenttextures.com/patterns/cartographer.png")',
-                            }}
-                          ></div>
-                          <Map className="w-8 h-8 text-neutral-400" />
-                          <span className="ml-2 font-medium text-neutral-500">
-                            Mapa aproximado
-                          </span>
-                        </div>
-                      )}
                     </motion.div>
                   </div>
                 )}
@@ -1027,7 +998,7 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
                   className="w-full p-4 rounded-xl border border-neutral-200 focus:border-red-600 focus:ring-1 focus:ring-red-600 outline-none bg-neutral-50 font-bold text-neutral-800"
                 >
                   <option value="pix">PIX</option>
-                  <option value="card_machine">Máquina de Cartão</option>
+                  <option value="card_machine">Cartão</option>
                   <option value="money">Dinheiro</option>
                 </select>
 

@@ -312,7 +312,7 @@ function OrdersTab() {
     } else if (order.paymentMethod === 'pix') {
       paymentText = `💠 *Pix*`;
     } else if (order.paymentMethod === 'card_machine') {
-      paymentText = `💳 *Máquina de Cartão*`;
+      paymentText = `💳 *Cartão*`;
     }
 
     let itemsText = order.items.map(item => {
@@ -439,7 +439,7 @@ function OrdersTab() {
                  <div className="flex gap-2 items-center">
                    <span className="font-bold text-neutral-700">Pagamento:</span>
                    <span className="text-neutral-600">
-                     {order.paymentMethod === 'pix' ? 'PIX' : order.paymentMethod === 'card_machine' ? 'Máquina de Cartão' : 'Dinheiro'}
+                     {order.paymentMethod === 'pix' ? 'PIX' : order.paymentMethod === 'card_machine' ? 'Cartão' : 'Dinheiro'}
                      {order.paymentMethod === 'money' && order.changeFor ? ` (Troco para R$ ${order.changeFor.toFixed(2).replace('.', ',')})` : ''}
                    </span>
                  </div>
