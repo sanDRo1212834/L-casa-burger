@@ -724,34 +724,46 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
 
   const [submittedOrder, setSubmittedOrder] = useState<any>(null);
   const [showClosedModal, setShowClosedModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleFinishOrder = async () => {
     if (!getStoreStatus().isOpen) {
       setShowClosedModal(true);
       return;
     }
+    setShowConfirmModal(true);
+  };
 
-    let status = "pending";
+  const confirmOrder = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      let status = "pending";
 
-    const newOrder = await submitOrder({
-      customerName,
-      phone,
-      items: cart,
-      total: cartTotal,
-      status: status as any,
-      deliveryType,
-      address:
-        deliveryType === "delivery"
-          ? { street, neighborhood, city, state, number, complement }
-          : undefined,
-      paymentMethod,
-      changeFor:
-        paymentMethod === "money" && changeFor
-          ? parseFloat(changeFor)
-          : undefined,
-    });
-    setSubmittedOrder(newOrder);
-    setStep("success");
+      const newOrder = await submitOrder({
+        customerName,
+        phone,
+        items: cart,
+        total: cartTotal,
+        status: status as any,
+        deliveryType,
+        address:
+          deliveryType === "delivery"
+            ? { street, neighborhood, city, state, number, complement }
+            : undefined,
+        paymentMethod,
+        changeFor:
+          paymentMethod === "money" && changeFor
+            ? parseFloat(changeFor)
+            : undefined,
+      });
+      setSubmittedOrder(newOrder);
+      setStep("success");
+      setShowConfirmModal(false);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const isCheckoutValid = () => {
@@ -1177,6 +1189,42 @@ function CartDrawer({ onClose }: { onClose: () => void }) {
             >
               Entendi
             </button>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Confirm Order Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white p-6 rounded-3xl w-full max-w-sm text-center shadow-2xl border border-neutral-100"
+          >
+            <div className="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <ShoppingCart className="w-8 h-8" />
+            </div>
+            <h2 className="text-2xl font-black text-neutral-900 mb-2">Confirmar Pedido?</h2>
+            <p className="text-neutral-500 mb-6 font-medium leading-relaxed">
+              Verifique se os itens estão corretos. Deseja enviar o seu pedido para a loja?
+            </p>
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={confirmOrder}
+                disabled={isSubmitting} 
+                className="w-full bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white font-bold py-4 rounded-xl transition-colors flex justify-center items-center gap-2"
+              >
+                {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
+                Sim, Enviar Pedido
+              </button>
+              <button 
+                onClick={() => setShowConfirmModal(false)}
+                disabled={isSubmitting}
+                className="w-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold py-4 rounded-xl transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
           </motion.div>
         </div>
       )}
