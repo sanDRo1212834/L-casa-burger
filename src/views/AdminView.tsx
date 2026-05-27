@@ -459,8 +459,6 @@ function OrdersTab() {
                        {order.address.complement && ` - ${order.address.complement}`}
                        <br />
                        {order.address.neighborhood}, {order.address.city} - {order.address.state}
-                       <br />
-                       CEP: {order.address.cep}
                      </span>
                    </div>
                  )}

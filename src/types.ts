@@ -38,7 +38,7 @@ export type CartItem = {
 };
 
 export type Address = {
-  cep: string;
+  cep?: string;
   street: string;
   number: string;
   neighborhood: string;
