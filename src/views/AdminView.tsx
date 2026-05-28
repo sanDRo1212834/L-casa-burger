@@ -220,7 +220,7 @@ function DashboardTab() {
             ))}
           </div>
           <div className="flex justify-between mt-3 text-sm text-neutral-500 font-bold gap-2">
-            {chartData.map((d, i) => <span key={i} className="flex-1 text-center w-full max-w-[48px] text-[10px] sm:text-xs truncate">{d.label}</span>)}
+            {chartData.map((d, i) => <span key={i} className="flex-1 text-center w-full max-w-[48px] text-[10px] sm:text-xs truncate" translate="no">{d.label}</span>)}
           </div>
         </div>
 
