@@ -191,10 +191,11 @@ function DashboardTab() {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-black text-neutral-900">Visão Geral</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <StatCard title="Vendas Hoje" value={`R$ ${todayRevenue.toFixed(2)}`} color="bg-emerald-50 text-emerald-600" />
         <StatCard title={`Melhor Dia (${bestDayName})`} value={`R$ ${bestDaySales.toFixed(2)}`} color="bg-orange-50 text-orange-600" />
         <StatCard title="Pedidos (Hoje)" value={todayOrders.length.toString()} color="bg-blue-50 text-blue-600" />
+        <StatCard title="Pedidos Entregues" value={todayOrders.filter(o => o.status === 'delivered').length.toString()} color="bg-cyan-50 text-cyan-600" />
         <StatCard title="Clientes Registrados" value={customers.length.toString()} color="bg-purple-50 text-purple-600" />
         <StatCard title="Alerta de Estoque" value={`${lowStockCount} Itens`} color="bg-red-50 text-red-600" />
       </div>
