@@ -24,7 +24,7 @@ const supabaseAnonKey = envKey && envKey !== ""
   ? envKey 
   : 'placeholder';
 
-const isPlaceholder = supabaseUrl === 'https://placeholder.supabase.co';
+const isPlaceholder = supabaseUrl.includes('placeholder.supabase.co');
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {

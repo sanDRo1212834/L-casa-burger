@@ -16,7 +16,7 @@ export function LoginView() {
       if (url.startsWith('"') && url.endsWith('"')) url = url.replace(/^"|"$/g, '');
       url = url.trim();
     }
-    return url && url !== "" && url !== "https://placeholder.supabase.co";
+    return url && url !== "" && !url.includes("placeholder.supabase.co");
   };
 
   useEffect(() => {

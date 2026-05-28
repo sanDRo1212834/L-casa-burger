@@ -116,8 +116,7 @@ export function Header() {
                             // we must check if supabase is configured
                             if (
                               url &&
-                              url !== "" &&
-                              url !== "https://placeholder.supabase.co"
+                              url !== "" && !url.includes("placeholder.supabase.co")
                             ) {
                               try {
                                 const { supabase } =

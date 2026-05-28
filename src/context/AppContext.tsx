@@ -30,7 +30,7 @@ const getSupabaseUrl = () => {
 
 const isSupabaseConfigured = () => {
   const url = getSupabaseUrl();
-  return url && url !== "" && url !== "https://placeholder.supabase.co";
+  return url && url !== "" && !url.includes("placeholder.supabase.co");
 };
 
 type AppState = {
@@ -337,7 +337,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setProducts(mockProducts);
         setTables(mockTables);
         setEmployees(mockEmployees);
-        // console.warn("Failed to fetch data, falling back to mock:", err.message);
       } finally {
         setIsLoadingData(false);
       }

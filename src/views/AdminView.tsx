@@ -17,7 +17,7 @@ export function AdminView() {
       if (url.startsWith('"') && url.endsWith('"')) url = url.replace(/^"|"$/g, '');
       url = url.trim();
     }
-    const isSupabaseConfigured = url && url !== "" && url !== "https://placeholder.supabase.co";
+    const isSupabaseConfigured = url && url !== "" && !url.includes("placeholder.supabase.co");
 
     if (isSupabaseConfigured) {
       try {
