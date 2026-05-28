@@ -208,7 +208,7 @@ function DashboardTab() {
           </div>
           <div className="h-56 flex items-end gap-2 justify-between mt-4">
             {chartData.map((d, i) => (
-              <div key={i} className="w-full max-w-[40px] bg-red-50 rounded-t-lg relative group flex flex-col justify-end h-full">
+              <div key={i} className="flex-1 w-full max-w-[48px] bg-red-50 rounded-t-lg relative group flex flex-col justify-end h-full">
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-2 bg-neutral-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 flex flex-col items-center shadow-lg pointer-events-none">
                   <span className="font-bold text-emerald-400">R$ {d.total.toFixed(2)}</span>
                   <span className="text-neutral-300">{d.count} {d.count === 1 ? 'pedido' : 'pedidos'}</span>
@@ -219,8 +219,8 @@ function DashboardTab() {
               </div>
             ))}
           </div>
-          <div className="flex justify-between mt-3 text-sm text-neutral-500 font-bold">
-            {chartData.map((d, i) => <span key={i} className="w-full text-center max-w-[40px]">{d.label}</span>)}
+          <div className="flex justify-between mt-3 text-sm text-neutral-500 font-bold gap-2">
+            {chartData.map((d, i) => <span key={i} className="flex-1 text-center w-full max-w-[48px] text-[10px] sm:text-xs truncate">{d.label}</span>)}
           </div>
         </div>
 
