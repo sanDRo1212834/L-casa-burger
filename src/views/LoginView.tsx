@@ -31,7 +31,7 @@ export function LoginView() {
           }
         })
         .catch((err) => {
-          console.warn("Supabase auth check failed:", err.message);
+          // console.warn("Supabase auth check failed:", err.message);
         });
 
       const {

@@ -11,6 +11,13 @@ import {
 } from "../types";
 import { supabase } from "../lib/supabase";
 
+import {
+  mockCategories,
+  mockProducts,
+  mockEmployees,
+  mockTables
+} from '../data/mockData';
+
 const getSupabaseUrl = () => {
   let url = import.meta.env.VITE_SUPABASE_URL || "";
   if (typeof url === "string") {
@@ -127,15 +134,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("myOrderIds", JSON.stringify(myOrderIds));
   }, [myOrderIds]);
 
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>(!isSupabaseConfigured() ? mockCategories : []);
+  const [products, setProducts] = useState<Product[]>(!isSupabaseConfigured() ? mockProducts : []);
   const [orders, setOrders] = useState<Order[]>([]);
 
   const myOrders = orders.filter((o) => myOrderIds.includes(o.id));
 
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [tables, setTables] = useState<TableReport[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>(!isSupabaseConfigured() ? mockEmployees : []);
+  const [tables, setTables] = useState<TableReport[]>(!isSupabaseConfigured() ? mockTables : []);
+
   const [searchQuery, setSearchQuery] = useState("");
 
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -157,11 +165,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             .limit(50),
         ]);
 
-        if (catRes.error)
-          console.error("Error fetching categories:", catRes.error);
-        if (prodRes.error)
-          console.error("Error fetching products:", prodRes.error);
-        if (ordRes.error) console.error("Error fetching orders:", ordRes.error);
+        if (catRes.error) {
+          // console.error("Error fetching categories:", catRes.error);
+        }
+        if (prodRes.error) {
+          // console.error("Error fetching products:", prodRes.error);
+        }
+        if (ordRes.error) {
+           // console.error("Error fetching orders:", ordRes.error);
+        }
 
         const cats = catRes.data;
         const prods = prodRes.data;
@@ -319,8 +331,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } else if (ords) {
           setOrders([]);
         }
-      } catch (err) {
-        console.warn("Failed to fetch initial data from Supabase:", err);
+      } catch (err: any) {
+        // Fallback to mock data if fetch failed
+        setCategories(mockCategories);
+        setProducts(mockProducts);
+        setTables(mockTables);
+        setEmployees(mockEmployees);
+        // console.warn("Failed to fetch data, falling back to mock:", err.message);
       } finally {
         setIsLoadingData(false);
       }

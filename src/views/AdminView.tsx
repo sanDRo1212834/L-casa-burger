@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useAppContext } from '../context/AppContext';
 import { LayoutDashboard, ShoppingCart, PackageSearch, Users, Contact2, LayoutGrid, Coffee, Plus, Trash2, Edit, X, Search, Camera, ImagePlus, Heart, LogOut } from 'lucide-react';
 import { Product, Category, Order, Extra } from '../types';
@@ -202,31 +203,49 @@ function DashboardTab() {
       
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
         {/* Sales Chart Area */}
-        <div className="xl:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-neutral-100 flex flex-col justify-between">
+        <div className="xl:col-span-2 bg-white p-6 rounded-2xl shadow-sm flex flex-col justify-between" style={{ border: 'none' }}>
           <div>
             <h3 className="font-bold text-neutral-900 mb-1">Histórico de Vendas na Semana</h3>
             <p className="text-xs text-neutral-500 mb-4">Total em R$ e quantidade de pedidos por dia.</p>
           </div>
-          <div className="h-56 flex items-end gap-2 justify-between mt-4">
-            {chartData.map((d, i) => (
-              <div key={i} className="flex-1 w-full max-w-[48px] bg-red-50 rounded-t-lg relative group flex flex-col justify-end h-full">
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 p-2 bg-neutral-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 flex flex-col items-center shadow-lg pointer-events-none">
-                  <span className="font-bold text-emerald-400">R$ {d.total.toFixed(2)}</span>
-                  <span className="text-neutral-300">{d.count} {d.count === 1 ? 'pedido' : 'pedidos'}</span>
-                </div>
-                <div className="bg-red-600 rounded-t-lg transition-all duration-1000 w-full relative overflow-hidden group-hover:bg-red-500" style={{ height: `${(d.total/maxSale)*100}%`, minHeight: d.total > 0 ? '4px' : '0' }}>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="flex justify-between mt-3 text-sm text-neutral-500 font-bold gap-2">
-            {chartData.map((d, i) => <span key={i} className="flex-1 text-center w-full max-w-[48px] text-[10px] sm:text-xs truncate" translate="no">{d.label}</span>)}
+          <div className="h-64 mt-4 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }} style={{ border: 'none', outline: 'none' }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f5f5f5" />
+                <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#737373', fontWeight: 600 }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#737373' }} tickFormatter={(value) => `R$ ${value}`} />
+                <Tooltip
+                  cursor={{ stroke: '#dc2626', strokeWidth: 1, strokeDasharray: '3 3' }}
+                  content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      const data = payload[0].payload;
+                      return (
+                        <div className="bg-neutral-900 text-white p-3 rounded-lg shadow-xl border border-neutral-800">
+                          <p className="font-bold text-neutral-300 mb-1">{label}</p>
+                          <p className="font-black text-emerald-400 text-lg">R$ {data.total.toFixed(2)}</p>
+                          <p className="text-neutral-400 text-sm">{data.count} {data.count === 1 ? 'pedido' : 'pedidos'}</p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="total"
+                  stroke="#dc2626"
+                  strokeWidth={3}
+                  dot={{ r: 4, fill: '#dc2626', strokeWidth: 2, stroke: '#fff' }}
+                  activeDot={{ r: 6, fill: '#dc2626', strokeWidth: 2, stroke: '#fff' }}
+                  animationDuration={1000}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
         {/* Best Sellers Ranking */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-100 flex flex-col">
+        <div className="bg-white p-6 rounded-2xl shadow-sm flex flex-col" style={{ border: 'none' }}>
           <h3 className="font-bold text-neutral-900 mb-4">Ranking Mais Vendidos</h3>
           <div className="flex-1 overflow-y-auto pr-2 space-y-4">
             {products.length > 0 ? (
