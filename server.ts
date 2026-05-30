@@ -181,7 +181,47 @@ async function startServer() {
             parts: [{ text: msg.content }]
         })) : [];
 
-        const systemPrompt = "Você é o assistente virtual da La Casa Burguer. Seja educado, curto e objetivo. Ajude o cliente com seus pedidos. " + orderContext;
+        // Fetch products and categories for context
+        const { data: categories } = await supabaseClient
+            .from('categories')
+            .select('*');
+            
+        const { data: products } = await supabaseClient
+            .from('products')
+            .select('*');
+
+        let menuContext = "Cardápio indisponível no momento.";
+        if (categories && products) {
+            menuContext = "Cardápio La Casa Burguer:\n";
+            categories.forEach((cat: any) => {
+                menuContext += `\n**${cat.name}**\n`;
+                const catProducts = products.filter((p: any) => p.category_id === cat.id);
+                catProducts.forEach((p: any) => {
+                    menuContext += `- ${p.name} (R$ ${p.price}): ${p.description || 'Sem descrição'}\n`;
+                });
+            });
+        }
+
+        const storeLink = "https://la-casa-burger.netlify.app"; // Ou o link da sua loja no Netlify/vercel etc
+
+        const systemPrompt = `Você é o assistente virtual inteligente da hamburgueria La Casa Burguer.
+Seja sempre educado, claro e objetivo. Use emojis amigáveis (🍔, 🍟, 🥤, 😊).
+Você deve ajudar o cliente a tirar dúvidas sobre o cardápio, ver o status do seu pedido e guiar o cliente em como fazer um pedido.
+
+**Informações importantes:**
+- O link para realizar pedidos é: ${storeLink} (você deve recomendar esse link quando o usuário quiser fazer um pedido).
+- Horário de funcionamento: de Quarta a Segunda, das 18:30 às 23:30 (folga nas terças).
+
+**Histórico de pedidos deste cliente:**
+${orderContext}
+
+**Cardápio Atualizado:**
+${menuContext}
+
+Regras:
+1. Se o cliente quiser pedir, indique o link: ${storeLink}
+2. Se o cliente perguntar se tem um item, verifique na lista do Cardápio.
+3. Responda de maneira concisa para o WhatsApp.`;
         
         const response = await ai.models.generateContent({
             model: "gemini-3.5-flash",
