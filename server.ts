@@ -89,6 +89,81 @@ async function startServer() {
     }
   });
 
+  // Autoresponder webhook
+  app.post("/api/autoresponder", async (req, res) => {
+    try {
+      const data = req.body;
+      const numeroCliente = data.phone;
+      const arquivoBase64 = data.file;
+      const tipoMime = data.mime || "image/jpeg";
+
+      // Initialize Supabase only if configured
+      const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+      const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+      
+      let supabaseClient = null;
+      if (supabaseUrl && supabaseKey && !supabaseUrl.includes("placeholder")) {
+        const { createClient } = await import("@supabase/supabase-js");
+        supabaseClient = createClient(supabaseUrl, supabaseKey);
+      }
+
+      if (arquivoBase64) {
+          const ai = getAIClient();
+          const response = await ai.models.generateContent({
+            model: "gemini-3.5-flash",
+            contents: [
+              "Analise este comprovante de PIX. Extraia o valor exato em Reais (R$), o nome do pagador e a data. Responda estritamente no formato: VALOR: R$ XX,XX | PAGADOR: Nome | DATA: DD/MM. Se não for um comprovante, responda apenas: 'Arquivo inválido'.",
+              { inlineData: { data: arquivoBase64.replace(/^data:image\/\w+;base64,/, ""), mimeType: tipoMime } }
+            ]
+          });
+          const resultadoLeitura = response.text || "";
+          
+          if (resultadoLeitura.includes("Arquivo inválido") || resultadoLeitura.toLowerCase().includes("inválido")) {
+            return res.json({ "reply": "⚠️ Desculpe, a imagem enviada não parece ser um comprovante de PIX válido. Por favor, envie a foto correta." });
+          }
+
+          if (supabaseClient) {
+            await supabaseClient
+                .from('orders')
+                .update({ status: 'preparing' })
+                .eq('phone', numeroCliente); 
+          }
+
+          return res.json({ 
+              "reply": `✅ *Comprovante Recebido!* \n\nO sistema identificou:\n📝 ${resultadoLeitura}\n\nSeu pedido da *La Casa Burguer* foi confirmado e já está na cozinha! 🍔🔥` 
+          });
+      }
+
+      const mensagemCliente = data.message ? data.message.trim() : "";
+      if (mensagemCliente === "2" || mensagemCliente.toLowerCase().includes("status")) {
+          if (!supabaseClient) {
+            return res.json({ "reply": "Banco de dados não configurado. Por favor, contate o restaurante." });
+          }
+          const { data: pedidos, error } = await supabaseClient
+              .from('orders')
+              .select('status, id')
+              .eq('phone', numeroCliente)
+              .order('created_at', { ascending: false })
+              .limit(1);
+
+          if (error) throw error;
+
+          if (pedidos && pedidos.length > 0) {
+              const strStatus = pedidos[0].status === 'pending' ? 'Pendente' : pedidos[0].status === 'preparing' ? 'Preparo' : pedidos[0].status === 'ready' ? 'Pronto' : 'Entregue';
+              return res.json({ "reply": `📋 *Status do Pedido:* O seu pedido está: *${strStatus}* 🍔` });
+          } else {
+              return res.json({ "reply": "Não encontrei nenhum pedido recente para este número. Faça seu pedido pelo link do cardápio!" });
+          }
+      }
+
+      return res.json({ "reply": "Sistema La Casa Burguer online!" });
+
+    } catch (error) {
+      console.error("Autoresponder error:", error);
+      return res.json({ "reply": "Recebi a mensagem, mas tive um probleminha para consultar o banco de dados agora. Um atendente já vai te ajudar!" });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
