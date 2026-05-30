@@ -9,11 +9,12 @@ dotenv.config();
 let aiClient: GoogleGenAI | null = null;
 function getAIClient() {
   if (!aiClient) {
-    if (!process.env.GEMINI_API_KEY) {
+    const apiKey = process.env.GEMINI_API_KEY || "AIzaSyCkAUN3nyiVNXX_Fdrw4fSrVmewN4rkr_Y";
+    if (!apiKey) {
       throw new Error("GEMINI_API_KEY environment variable is required");
     }
     aiClient = new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY,
+      apiKey: apiKey,
       httpOptions: {
         headers: {
           "User-Agent": "aistudio-build",
@@ -135,28 +136,73 @@ async function startServer() {
       }
 
       const mensagemCliente = data.message ? data.message.trim() : "";
-      if (mensagemCliente === "2" || mensagemCliente.toLowerCase().includes("status")) {
-          if (!supabaseClient) {
-            return res.json({ "reply": "Banco de dados não configurado. Por favor, contate o restaurante." });
-          }
-          const { data: pedidos, error } = await supabaseClient
-              .from('orders')
-              .select('status, id')
-              .eq('phone', numeroCliente)
-              .order('created_at', { ascending: false })
-              .limit(1);
+      
+      let aiResponseText = "Sistema La Casa Burguer online!";
 
-          if (error) throw error;
+      if (mensagemCliente) {
+        if (!supabaseClient) {
+          return res.json({ "reply": "Banco de dados não configurado. Por favor, contate o restaurante." });
+        }
 
-          if (pedidos && pedidos.length > 0) {
-              const strStatus = pedidos[0].status === 'pending' ? 'Pendente' : pedidos[0].status === 'preparing' ? 'Preparo' : pedidos[0].status === 'ready' ? 'Pronto' : 'Entregue';
-              return res.json({ "reply": `📋 *Status do Pedido:* O seu pedido está: *${strStatus}* 🍔` });
-          } else {
-              return res.json({ "reply": "Não encontrei nenhum pedido recente para este número. Faça seu pedido pelo link do cardápio!" });
-          }
+        const ai = getAIClient();
+        
+        // Save user message to Supabase
+        await supabaseClient.from('chat_messages').insert({
+          phone: numeroCliente,
+          role: 'user',
+          content: mensagemCliente
+        });
+
+        // Fetch user's recent orders for context
+        const { data: pedidos } = await supabaseClient
+            .from('orders')
+            .select('*')
+            .eq('phone', numeroCliente)
+            .order('created_at', { ascending: false })
+            .limit(3);
+
+        let orderContext = "O cliente não tem pedidos recentes.";
+        if (pedidos && pedidos.length > 0) {
+            orderContext = "Pedidos recentes do cliente:\n" + pedidos.map((p: any) => 
+                `- Pedido #${p.id.slice(0,4)} | Status: ${p.status} | Total: R$ ${p.total}`
+            ).join("\n");
+        }
+
+        // Fetch recent chat history
+        const { data: chatHistory } = await supabaseClient
+            .from('chat_messages')
+            .select('role, content')
+            .eq('phone', numeroCliente)
+            .order('created_at', { ascending: true })
+            .limit(10);
+
+        const historyContents = chatHistory ? chatHistory.map((msg: any) => ({
+            role: msg.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: msg.content }]
+        })) : [];
+
+        const systemPrompt = "Você é o assistente virtual da La Casa Burguer. Seja educado, curto e objetivo. Ajude o cliente com seus pedidos. " + orderContext;
+        
+        const response = await ai.models.generateContent({
+            model: "gemini-3.5-flash",
+            contents: [
+                { role: "user", parts: [{ text: systemPrompt }] },
+                { role: "model", parts: [{ text: "Entendido. Sou o assistente da La Casa Burguer." }] },
+                ...historyContents
+            ]
+        });
+
+        aiResponseText = response.text || "Desculpe, não consegui entender.";
+
+        // Save AI response to Supabase
+        await supabaseClient.from('chat_messages').insert({
+          phone: numeroCliente,
+          role: 'assistant',
+          content: aiResponseText
+        });
       }
 
-      return res.json({ "reply": "Sistema La Casa Burguer online!" });
+      return res.json({ "reply": aiResponseText });
 
     } catch (error) {
       console.error("Autoresponder error:", error);

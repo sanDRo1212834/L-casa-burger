@@ -40,6 +40,14 @@ CREATE TABLE public.orders (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+CREATE TABLE public.chat_messages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    phone TEXT NOT NULL,
+    role TEXT NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 -- If you already have the orders table, run this instead:
 -- ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS delivery_type TEXT;
 -- ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS delivery_fee NUMERIC;
@@ -48,6 +56,7 @@ CREATE TABLE public.orders (
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.chat_messages ENABLE ROW LEVEL SECURITY;
 
 -- Create Policies (Public read for categories and products, authenticated insert/update)
 DROP POLICY IF EXISTS "Enable read access for all users" ON public.categories;
@@ -91,6 +100,8 @@ CREATE TABLE public.localizacao_entregadores (
 
 ALTER TABLE public.localizacao_entregadores ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Enable all for localizacao_entregadores" ON public.localizacao_entregadores FOR ALL USING (true) WITH CHECK (true);
+
+CREATE POLICY "Enable all for chat_messages" ON public.chat_messages FOR ALL USING (true) WITH CHECK (true);
 
 -- Ativar realtime para a tabela:
 -- ALTER PUBLICATION supabase_realtime ADD TABLE localizacao_entregadores;
